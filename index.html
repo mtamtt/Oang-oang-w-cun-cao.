@@ -108,7 +108,7 @@
   </main>
 
 <script>
-const ENABLE_COMMENTS = false; // set true sau khi m cấu hình giscus
+const ENABLE_COMMENTS = true; // set true sau khi m cấu hình giscus
 const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
 const MAX_CHAPTERS_GUESS = 999;
 const MAX_PAGES_GUESS = 2000;
@@ -201,7 +201,10 @@ function createGiscusThread(term){
   s.src = 'https://giscus.app/client.js';
   s.async = true;
   s.crossOrigin = 'anonymous';
-  // điền thông tin của repo m ở đây
+  data-repo="mtamtt/Oang-oang-w-cun-cao."
+  data-repo-id="R_kgDOPcLS9A"
+  data-category="General"
+  data-category-id="DIC_kwDOPcLS9M4CuDfL"
   s.setAttribute('data-repo','__YOUR_GITHUB_USERNAME__/__YOUR_REPO__');
   s.setAttribute('data-repo-id','__REPO_ID__');
   s.setAttribute('data-category','General');
