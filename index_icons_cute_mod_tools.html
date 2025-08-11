@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oăng oăng w cún cáo — Trang chủ</title>
+  <style>
+    :root{--bg:#0b0d10;--fg:#e6e8eb;--muted:#98a1b3;--card:#0f1216;--bd:#1a1f29;--accent:#f59e0b;}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%}
+    body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(11,13,16,.98), rgba(11,13,16,.90));border-bottom:1px solid var(--bd);backdrop-filter:saturate(180%) blur(10px)}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.2px}
+    .brand .badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:10px;background:#1f2937;border:1px solid rgba(245,158,11,.35);box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .15s ease, box-shadow .15s ease}
+    .brand .badge:hover{transform:translateY(-1px) rotate(-2deg);box-shadow:0 6px 14px rgba(0,0,0,.35)}
+    .brand span{font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);background:var(--card);border-radius:999px}
+    select,button{color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;cursor:pointer}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
+    .grow{flex:1}
+    .grid{display:grid;gap:12px}
+    .viewer{display:flex;flex-direction:column;gap:0}
+    .page{width:100%;display:block;border-radius:0;border:none;background:#0a0c0f;margin-left:auto;margin-right:auto}
+    .page-wrap{position:relative}
+    .badge-c{position:absolute;top:10px;right:10px;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#1f2937;border:1px solid #2a3242;color:#fff;font:600 12px/22px system-ui;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+    .card{padding:14px;border:1px solid var(--bd);background:var(--card);border-radius:14px}
+    .toc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+    .footer{padding:28px 0;color:var(--muted);text-align:center}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .nav3{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+    .nav3 .left{justify-self:start}
+    .nav3 .center{justify-self:center}
+    .nav3 .right{justify-self:end}
+    .meta{color:var(--muted);font-size:13px}
+
+    /* Comment dock */
+    .dock{position:fixed;top:56px;right:0;bottom:0;width:440px;max-width:95vw;background:var(--card);border-left:1px solid var(--bd);transform:translateX(100%);transition:transform .25s ease;z-index:50;display:flex;flex-direction:column}
+    .dock.open{transform:translateX(0)}
+    .dock-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--bd)}
+    .dock-title{font-weight:600}
+    .dock-body{flex:1;overflow:auto;display:flex;flex-direction:column}
+    .chip{padding:6px 10px;border:1px solid var(--bd);border-radius:999px;background:var(--card);font-size:13px}
+
+    /* Floating to top button – pretty icon */
+    #toTopBtn{
+      position:fixed;right:18px;bottom:22px;z-index:60;border-radius:999px;width:46px;height:46px;display:none;
+      align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.35);
+      background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);box-shadow:0 8px 18px rgba(0,0,0,.45);
+      transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease
+    }
+    #toTopBtn:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.55);border-color:rgba(245,158,11,.6)}
+    #toTopBtn svg{width:22px;height:22px;display:block;color:#e5e7eb}
+    #toTopBtn:active{transform:translateY(-1px) scale(.98)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">
+        <!-- Cute sticker Dog -->
+        <div class="badge" title="cún">
+          <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true">
+            <circle cx="32" cy="34" r="18" fill="#fff"/>
+            <circle cx="32" cy="34" r="16" fill="#FFE1A8" stroke="#0f172a" stroke-width="1.6"/>
+            <path d="M16 26 C18 18, 26 18, 26 26 L22 30 Z" fill="#B98859"/>
+            <path d="M48 26 C46 18, 38 18, 38 26 L42 30 Z" fill="#B98859"/>
+            <circle cx="26.5" cy="32" r="2.2" fill="#0f172a"/>
+            <circle cx="37.5" cy="32" r="2.2" fill="#0f172a"/>
+            <path d="M31 36 q1-2 2 0 q1-2 2 0 a2 2 0 1 1 -4 0 z" fill="#111827"/>
+            <path d="M28,39 Q32,42 36,39" stroke="#0f172a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <circle cx="24" cy="39.5" r="2" fill="#F9A8D4" opacity=".9"/>
+            <circle cx="40" cy="39.5" r="2" fill="#F9A8D4" opacity=".9"/>
+          </svg>
+        </div>
+        <!-- Cute sticker Fox -->
+        <div class="badge" title="cáo">
+          <svg viewBox="0 0 64 64" width="22" height="22" aria-hidden="true">
+            <circle cx="32" cy="34" r="18" fill="#fff"/>
+            <defs><linearGradient id="foxGrad" x1="0" x2="1"><stop offset="0" stop-color="#ffaf45"/><stop offset="1" stop-color="#f97316"/></linearGradient></defs>
+            <circle cx="32" cy="34" r="16" fill="url(#foxGrad)" stroke="#0f172a" stroke-width="1.6"/>
+            <path d="M20 26 L26 16 L28 28 Z" fill="#f97316"/><path d="M44 26 L38 16 L36 28 Z" fill="#f97316"/>
+            <path d="M22 34 Q32 42 42 34 Q32 31 22 34 Z" fill="#fff" opacity=".98"/>
+            <circle cx="27.5" cy="32" r="2" fill="#0f172a"/><circle cx="36.5" cy="32" r="2" fill="#0f172a"/>
+            <circle cx="32" cy="36" r="1.6" fill="#0f172a"/>
+            <circle cx="25" cy="38.5" r="1.8" fill="#FEB2B2" opacity=".9"/><circle cx="39" cy="38.5" r="1.8" fill="#FEB2B2" opacity=".9"/>
+          </svg>
+        </div>
+        <span>Oăng oăng w cún cáo</span>
+      </div>
+      <a href="#home" id="homeBtn" class="btn">🏠 Trang chủ</a>
+      <div class="pill" id="tocHeader">
+        <label for="chapterSelTop">Mục lục</label>
+        <select id="chapterSelTop"></select>
+      </div>
+      <div class="pill" id="fitControls">
+        <label for="fitSel">Hiển thị</label>
+        <select id="fitSel">
+          <option value="fit">Vừa khung</option>
+          <option value="full">Kích thước gốc</option>
+        </select>
+      </div>
+      <button id="toggleDock" class="btn" title="Bình luận (mở panel)">💬 Bình luận</button>
+      <div class="grow"></div>
+      <div class="meta">Phím tắt: <b>B</b> đóng cmt · <b>G</b> lên đầu</div>
+    </div>
+  </header>
+
+  <!-- Comment dock -->
+  <aside id="commentDock" class="dock" aria-hidden="true">
+    <div class="dock-head">
+      <div class="dock-title">Bình luận</div>
+      <div class="row">
+        <span id="dockContext" class="chip">Trang: <b>—</b></span>
+        <a id="openGH" class="btn" href="#" target="_blank" rel="noopener" style="display:none">Mở trên GitHub</a>
+        <button id="closeDock" class="btn">Đóng</button>
+      </div>
+    </div>
+    <div class="dock-body">
+      <div class="card" style="margin:12px">
+        <div style="font-size:13px;color:var(--muted)">
+          • Chủ cmt có thể <b>sửa/xóa</b> bình luận của họ. • Chủ repo/mod có thể <b>xóa</b> cmt.
+          <br/>• Nhấn <b>Mở trên GitHub</b> để thao tác trực tiếp trong Discussions.
+        </div>
+      </div>
+      <div id="giscusHost" style="min-height:300px"></div>
+    </div>
+  </aside>
+
+  <!-- Floating "go to top" button -->
+  <button id="toTopBtn" aria-label="Lên đầu chap" title="Lên đầu chap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 15l-6-6-6 6"/>
+    </svg>
+  </button>
+
+  <main class="wrap grid">
+    <!-- HOME VIEW -->
+    <section id="homeView" class="grid">
+      <div class="card">
+        <div style="font-weight:700;margin-bottom:6px">Cạnh tranh thân thiện (Friendly Rivalry)</div>
+      </div>
+      <div class="grid" style="grid-template-columns: 280px 1fr;gap:16px;align-items:start">
+        <div class="card">
+          <img id="coverImg" alt="cover" style="width:100%;border-radius:10px;border:1px solid var(--bd);background:#0a0c0f"
+               src="assets/cover.jpg"
+               onerror="this.onerror=null; this.src='assets/Cover.jpg';">
+        </div>
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:10px">Mục lục</div>
+          <div id="homeTOC" class="toc-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- READER VIEW -->
+    <section id="readerView" style="display:none">
+      <div class="card">
+        <div id="chapTitle" style="font-weight:700">...</div>
+      </div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevTop">⟵ Chap trước</button></div>
+          <div class="center">
+            <label for="chapterSelMid" class="chip" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label>
+            <select id="chapterSelMid"></select>
+          </div>
+          <div class="right"><button class="btn" id="nextTop">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <div id="viewer" class="viewer"></div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevBottom">⟵ Chap trước</button></div>
+          <div class="center">
+            <label for="chapterSelBottom" class="chip" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label>
+            <select id="chapterSelBottom"></select>
+          </div>
+          <div class="right"><button class="btn" id="nextBottom">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <div class="card" id="overallBar">
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <button class="btn" id="openOverall">💬 Bình luận chap</button>
+          <div class="row">
+            <span class="chip" id="heartBtn"><b id="heartIcon">♡</b><span id="heartText"> Thả tim</span><span class="chip hint" id="heartCount" style="margin-left:6px;border:none;background:none"></span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Made for reading on GitHub Pages. Comments via giscus.</div>
+  </main>
+
+<script>
+// ====== CONFIG ======
+const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
+const MAX_CHAPTERS_GUESS = 999;
+const MAX_PAGES_GUESS = 2000;
+const EXTS = ["jpg","jpeg","png","gif","webp"];
+const GISCUS = {
+  enabled: true,
+  repo: "mtamtt/Oang-oang-w-cun-cao.",
+  repoId: "R_kgDOPcLS9A",
+  category: "General",
+  categoryId: "DIC_kwDOPcLS9M4CuDfL",
+  mapping: "specific",
+  theme: "dark",
+  lang: "vi",
+  reactions: "1",
+  emit: "1",   // turn on to receive metadata & discussion URL
+  inputPos: "top"
+};
+let COMMENT_COUNTS = {};
+let currentDiscussionURL = null;
+
+// ====== HELPERS ======
+const $ = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
+function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')) }
+function enc(s){ return encodeURIComponent(s) }
+function fileName(ch, i, ext){ return `C${ch} (${i}).${ext}` }
+function fileUrl(chPath, ch, i, ext){ return `${chPath}/${enc(fileName(ch,i,ext))}` }
+
+function imgOk(url){
+  return new Promise((resolve)=>{ const img=new Image(); img.onload=()=>resolve(true); img.onerror=()=>resolve(false); img.src=url; });
+}
+async function findExistingUrl(chPath, ch, i){
+  const exts = ["jpg","jpeg","png","gif","webp"];
+  for(const ext of exts){
+    const url = fileUrl(chPath, ch, i, ext);
+    if(await imgOk(url)) return url;
+  }
+  return null;
+}
+async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1) !== null }
+async function buildChaptersAuto(){
+  const chapters=[];
+  for(let i=1;i<=999;i++){
+    if(!(await chapExists(i))) break;
+    chapters.push({ id:`chap-${i}`, index:i, title:`Chap ${i}`, path:`chapters/chap-${i}` });
+  }
+  return chapters;
+}
+
+// ====== STATE ======
+let CHAPTERS=[];
+let currentChapter=null;
+let currentTerm=null;
+let io=null;
+
+// ====== COMMENTS ======
+function ensureGiscus(term){
+  if(!GISCUS.enabled) return;
+  const host = $("#giscusHost");
+  const a = $("#openGH"); a.style.display='none'; a.removeAttribute('href'); // reset link
+  if(host.dataset.ready==="1"){
+    setGiscusTerm(term);
+    return;
+  }
+  const s = document.createElement('script');
+  s.src = 'https://giscus.app/client.js';
+  s.async = true;
+  s.crossOrigin = 'anonymous';
+  s.setAttribute('data-repo', GISCUS.repo);
+  s.setAttribute('data-repo-id', GISCUS.repoId);
+  s.setAttribute('data-category', GISCUS.category);
+  s.setAttribute('data-category-id', GISCUS.categoryId);
+  s.setAttribute('data-mapping', GISCUS.mapping);
+  s.setAttribute('data-term', term);
+  s.setAttribute('data-reactions-enabled', '1');
+  s.setAttribute('data-emit-metadata', '1'); // important
+  s.setAttribute('data-input-position', GISCUS.inputPos);
+  s.setAttribute('data-theme', GISCUS.theme);
+  s.setAttribute('data-lang', GISCUS.lang);
+  host.innerHTML = "";
+  host.appendChild(s);
+  host.dataset.ready="1";
+  currentTerm = term;
+}
+function setGiscusTerm(term){
+  if(currentTerm===term) return;
+  currentTerm = term;
+  const frame = document.querySelector('iframe.giscus-frame');
+  if(!frame) return;
+  frame.contentWindow.postMessage({ giscus: { setConfig: { term, mapping: GISCUS.mapping } } }, 'https://giscus.app');
+  $("#dockContext").innerHTML = 'Trang: <b>'+term.replace(/.*img-/,'#')+'</b>';
+}
+
+// listen for giscus metadata to get the discussion URL
+window.addEventListener('message', (event)=>{
+  if(event.origin !== 'https://giscus.app') return;
+  const data = event.data && event.data.giscus;
+  if(data && data.discussion && data.discussion.url){
+    currentDiscussionURL = data.discussion.url;
+    const a = $("#openGH");
+    if(a){ a.href = currentDiscussionURL; a.style.display='inline-flex'; }
+  }
+});
+
+// ====== DOCK ======
+function openDock(){
+  const d=$("#commentDock");
+  d.classList.add('open'); d.setAttribute('aria-hidden','false');
+  updateTopBtnVisibility(); // hide while open
+}
+function closeDock(){
+  const d=$("#commentDock");
+  d.classList.remove('open'); d.setAttribute('aria-hidden','true');
+  updateTopBtnVisibility(); // restore based on scroll
+}
+$("#toggleDock").addEventListener('click', ()=> openDock());
+$("#closeDock").addEventListener('click', ()=> closeDock());
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='b'||e.key==='B') { closeDock(); }           // B now only closes
+  if(e.key==='g'||e.key==='G') window.scrollTo({top:0,behavior:'smooth'});
+});
+
+// ====== HEART ======
+function heartKey(chId){ return 'heart:'+chId }
+function renderHeart(chId){
+  const btn = $("#heartBtn");
+  const count = $("#heartCount");
+  const icon = $("#heartIcon");
+  const text = $("#heartText");
+  const liked = localStorage.getItem(heartKey(chId))==='1';
+  icon.textContent = liked ? '❤' : '♡';
+  text.textContent = liked ? 'Đã thả tim' : 'Thả tim';
+  count.textContent = liked ? '(thiết bị này)' : '';
+  btn.classList.toggle('liked', liked);
+  btn.onclick = ()=>{
+    const cur = localStorage.getItem(heartKey(chId))==='1';
+    localStorage.setItem(heartKey(chId), cur ? '0' : '1');
+    renderHeart(chId);
+  };
+}
+
+// ====== RENDER CHAPTER ======
+async function renderChapter(ch){
+  $('#homeView').style.display='none';
+  $('#readerView').style.display='block';
+
+  currentChapter = ch;
+  $('#chapTitle').textContent = `${'Cạnh tranh thân thiện (Friendly Rivalry)'} — ${ch.title}`;
+  const viewer = $('#viewer'); viewer.innerHTML='';
+
+  // sync dropdowns
+  ['Top','Mid','Bottom'].forEach(pos=>{
+    const sel = document.getElementById('chapterSel'+pos);
+    if(sel) sel.value = ch.id;
+  });
+
+  // load pages
+  let missing=0;
+  const imgEls = [];
+  for(let i=1;i<=2000;i++){
+    const url = await findExistingUrl(ch.path, ch.index, i);
+    if(!url){
+      missing++;
+      if(missing>=3 || i===1) break;
+      continue;
+    }
+    missing=0;
+    const wrap = document.createElement('div'); wrap.className = 'page-wrap';
+    const img = document.createElement('img');
+    img.src = url; img.className='page'; img.loading='lazy'; img.alt = `${ch.title} — trang ${i}`;
+    img.dataset.term = `${ch.id}-img-${i}`;
+    img.addEventListener('click', ()=>{ ensureGiscus(img.dataset.term); openDock(); setGiscusTerm(img.dataset.term); });
+    wrap.appendChild(img);
+    const c = (COMMENT_COUNTS[ch.id] && COMMENT_COUNTS[ch.id][`img-${i}`]) || 0;
+    if(c && c>0){ const b = document.createElement('span'); b.className='badge-c'; b.textContent = c>99?'99+':String(c); wrap.appendChild(b); }
+    viewer.appendChild(wrap);
+    imgEls.push(img);
+  }
+
+  // nav behaviour
+  const prevId = neighborChapter(ch.id,-1);
+  const nextId = neighborChapter(ch.id, 1);
+  $('#prevTop').onclick = ()=> prevId && (location.hash=prevId);
+  $('#nextTop').onclick = ()=> nextId && (location.hash=nextId);
+  $('#prevBottom').onclick = ()=> prevId && (location.hash=prevId);
+  $('#nextBottom').onclick = ()=> nextId && (location.hash=nextId);
+
+  // overall button
+  $('#openOverall').onclick = ()=>{ ensureGiscus(`${ch.id}-overall`); openDock(); setGiscusTerm(`${ch.id}-overall`); };
+
+  renderHeart(ch.id);
+
+  // observe for context
+  if(io) io.disconnect();
+  io = new IntersectionObserver((entries)=>{
+    const visible = entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio - a.intersectionRatio)[0];
+    if(!visible) return;
+    const term = visible.target.dataset.term;
+    currentTerm = term;
+    if($("#commentDock").classList.contains('open')) setGiscusTerm(term);
+    $("#dockContext").innerHTML = 'Trang: <b>'+term.replace(/.*img-/,'#')+'</b>';
+  }, { root:null, rootMargin:'-40% 0px -50% 0px', threshold:[0.25,0.5,0.75,1] });
+  imgEls.forEach(el=> io.observe(el));
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateTopBtnVisibility();
+}
+
+// ====== TOP BUTTON ======
+const toTopBtn = document.getElementById('toTopBtn');
+function updateTopBtnVisibility(){
+  const dockOpen = $("#commentDock").classList.contains('open');
+  const show = window.scrollY > 600 && $('#readerView').style.display !== 'none' && !dockOpen;
+  toTopBtn.style.display = show ? 'flex' : 'none';
+}
+toTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+window.addEventListener('scroll', updateTopBtnVisibility);
+
+// ====== ROUTER & INIT ======
+function populateSelect(id){
+  const sel = document.getElementById(id); sel.innerHTML='';
+  CHAPTERS.forEach(ch=>{
+    const opt=document.createElement('option'); opt.value=ch.id; opt.textContent=ch.title; sel.appendChild(opt);
+  });
+  sel.addEventListener('change', ()=> location.hash = sel.value);
+}
+function neighborChapter(id, dir){
+  const idx = CHAPTERS.findIndex(c=>c.id===id);
+  const next = CHAPTERS[idx+dir];
+  return next ? next.id : null;
+}
+function route(){
+  const h = getHash() || 'home';
+  if(h==='home'){
+    $('#homeView').style.display='grid';
+    $('#readerView').style.display='none';
+    closeDock();
+  } else {
+    const ch = CHAPTERS.find(c=>c.id===h) || CHAPTERS[0];
+    renderChapter(ch);
+  }
+}
+
+(async function init(){
+  try{ const res = await fetch('comments.json',{cache:'no-store'}); if(res.ok){ COMMENT_COUNTS = await res.json(); } }catch(e){}
+  CHAPTERS = await buildChaptersAuto();
+  function buildTOC(containerId){
+    const container = document.querySelector(containerId); container.innerHTML='';
+    CHAPTERS.forEach(ch=>{
+      const a=document.createElement('a'); a.href=`#${ch.id}`; a.textContent=ch.title; a.className='btn';
+      a.addEventListener('click', (e)=>{ e.preventDefault(); location.hash = ch.id; });
+      container.appendChild(a);
+    });
+  }
+  buildTOC('#homeTOC');
+  ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(populateSelect);
+  document.querySelector('#fitSel').addEventListener('change', ()=>{
+    document.querySelectorAll('.page').forEach(img=>{
+      const mode = document.querySelector('#fitSel').value;
+      if(mode==='fit'){ img.style.width='100%'; img.style.maxWidth='100%'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
+      else{ img.style.width='auto'; img.style.maxWidth='none'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
+    });
+  });
+  window.addEventListener('hashchange', route);
+  route();
+  updateTopBtnVisibility();
+})();
+</script>
+</body>
+</html>
