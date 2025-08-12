@@ -1,0 +1,591 @@
+
+<!doctype html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oăng oăng w cún cáo — Đọc truyện</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#0b0d10;--fg:#e6e8eb;--muted:#98a1b3;--card:#0f1216;--bd:#1a1f29;--accent:#f59e0b;--pink:#ec4899;--green:#22c55e}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%}
+    body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(11,13,16,.98), rgba(11,13,16,.92));border-bottom:1px solid var(--bd);backdrop-filter:saturate(180%) blur(10px)}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px}
+    .brand{display:flex;align-items:center;gap:2px;font-weight:800}
+    .brand svg{height:46px;width:auto;display:block}
+    .brand span{font-weight:800;margin-left:8px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);background:var(--card);border-radius:999px}
+    select,button,input,textarea{color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+    button{cursor:pointer}
+    input,textarea{width:100%}
+    textarea{min-height:88px;resize:vertical}
+    .grow{flex:1}
+    .grid{display:grid;gap:12px}
+    .viewer{display:flex;flex-direction:column;gap:0}
+    .page{width:100%;display:block;border-radius:0;border:none;background:#0a0c0f;margin-left:auto;margin-right:auto}
+    .page-wrap{position:relative;overflow:visible}
+    /* badge outside on right rim, bigger + gradient */
+    .badge{position:absolute;top:50%;right:-14px;transform:translateY(-50%);background:linear-gradient(135deg,#3b82f6,#fbbf24);border:1px solid #1f2937;border-radius:999px;width:26px;height:26px;display:none;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(0,0,0,.45)}
+    .badge svg{width:14px;height:14px;color:#0b0d10}
+    .card{padding:14px;border:1px solid var(--bd);background:var(--card);border-radius:14px}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
+    .btn:hover{border-color:#2a3242}
+    .btn.plane{display:inline-flex;align-items:center;justify-content:center;border-radius:12px}
+    .btn.small{padding:6px 8px;font-size:14px}
+    .toc-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+    .footer{padding:28px 0;color:var(--muted);text-align:center}
+    .nav3{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+    .nav3 .left{justify-self:start}
+    .nav3 .center{justify-self:center}
+    .nav3 .right{justify-self:end}
+    .meta{color:var(--muted);font-size:13px}
+
+    /* To top */
+    #toTopBtn{
+      position:fixed;right:18px;bottom:18px;z-index:55;border-radius:999px;width:46px;height:46px;display:none;
+      align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.35);
+      background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);box-shadow:0 8px 18px rgba(0,0,0,.45);
+    }
+    #toTopBtn svg{width:22px;height:22px;display:block;color:#e5e7eb}
+
+    /* Mini panel */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:70}
+    .backdrop.open{opacity:1;pointer-events:auto}
+    .mini{
+      position:fixed;z-index:71;right:16px;bottom:70px;border:1px solid var(--bd);background:var(--card);
+      border-radius:20px;box-shadow:0 16px 32px rgba(0,0,0,.5);
+      width:360px;height:420px;max-width:95vw;max-height:85vh;
+      display:flex;flex-direction:column;transform:translateY(16px) scale(.98);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease;
+      overflow:hidden;
+    }
+    .mini.open{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+    .mini-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}
+    .cmt-item{border-top:1px dashed #223; padding:8px 6px}
+    .cmt-meta{color:#9fb0c0; font-size:12px; margin-bottom:4px}
+    .cmt-body{white-space:pre-wrap}
+    .cmt-actions{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+    .cmt-actions .danger{border-color:#7f1d1d;color:#fca5a5}
+    .replies{margin-top:6px;border-left:2px dashed #233;padding-left:8px}
+    .reacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .react{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--bd);border-radius:999px;padding:4px 8px;background:var(--card)}
+    .react.active{border-color:#334155;background:rgba(148,163,184,.08)}
+    /* Heart */
+    .heart{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--bd);background:var(--card);}
+    .heart.active{border-color:rgba(236,72,153,.35);background:linear-gradient(135deg,rgba(236,72,153,.12),rgba(236,72,153,.04))}
+    .note{color:var(--muted);font-size:13px}
+    /* Emoji picker */
+    .picker{position:fixed;z-index:80;border:1px solid var(--bd);background:var(--card);border-radius:12px;box-shadow:0 16px 32px rgba(0,0,0,.5);padding:10px;display:none;grid-template-columns:repeat(8, 1fr);gap:6px}
+    .picker.open{display:grid} .picker .cell{display:flex;align-items:center;justify-content:center;padding:6px;border:1px solid var(--bd);border-radius:8px;cursor:pointer}
+    .picker .cell:hover{border-color:#334155} .picker .wide{grid-column:1/-1;display:flex;gap:8px} .picker input{flex:1}
+    @media (max-width:640px){ .mini{width:320px;height:380px;right:12px;bottom:64px} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">
+        <!-- Dog -->
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><radialGradient id="dg" cx="50%" cy="45%" r="60%"><stop offset="0%" stop-color="#FFEBD3"/><stop offset="100%" stop-color="#FFD4A9"/></radialGradient></defs>
+          <circle cx="32" cy="34" r="16" fill="url(#dg)" stroke="#0f172a" stroke-width="1.4"/>
+          <path d="M19 27 q4-10 11-7 v7 z" fill="#C38E66" />
+          <path d="M45 27 q-4-10-11-7 v7 z" fill="#C38E66" />
+          <circle cx="26.5" cy="32" r="2.3" fill="#0f172a"/><circle cx="37.5" cy="32" r="2.3" fill="#0f172a"/>
+          <path d="M30.5 35 q1.5-2 3 0 q1.5-2 3 0 a2.2 2.2 0 1 1 -6 0 z" fill="#111827"/>
+          <path d="M28,39 Q32,42 36,39" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <!-- Fox -->
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><linearGradient id="fg" x1="0" x2="1"><stop offset="0" stop-color="#FFC068"/><stop offset="1" stop-color="#FF7A3D"/></linearGradient></defs>
+          <circle cx="32" cy="34" r="16" fill="url(#fg)" stroke="#0f172a" stroke-width="1.4"/>
+          <path d="M23 25 L28 16 L30 28 Z" fill="#FF7A3D"/><path d="M41 25 L36 16 L34 28 Z" fill="#FF7A3D"/>
+          <path d="M22 34 Q32 42 42 34 Q32 31 22 34 Z" fill="white" opacity=".98"/>
+          <circle cx="27.5" cy="32" r="2.2" fill="#0f172a"/><circle cx="36.5" cy="32" r="2.2" fill="#0f172a"/>
+          <circle cx="32" cy="36" r="1.7" fill="#0f172a"/>
+        </svg>
+        <span>Oăng oăng w cún cáo</span>
+      </div>
+      <a href="#home" id="homeBtn" class="btn">🏠 Trang chủ</a>
+      <div class="pill"><label for="chapterSelTop">Mục lục</label> <select id="chapterSelTop"></select></div>
+      <div class="pill"><label for="fitSel">Hiển thị</label>
+        <select id="fitSel">
+          <option value="fit">Vừa khung</option>
+          <option value="full">Kích thước gốc</option>
+        </select>
+      </div>
+      <div class="pill" id="authPill">
+        <span id="authState" class="meta">Chưa đăng nhập</span>
+        <button id="btnLogin" class="btn small">Đăng nhập GitHub</button>
+        <button id="btnLogout" class="btn small" style="display:none">🚪</button>
+      </div>
+      <div class="grow"></div>
+      <div class="meta">Phím tắt: <b>B</b> đóng cmt · <b>G</b> lên đầu</div>
+    </div>
+  </header>
+
+  <!-- Backdrop + Emoji Picker + Mini panel -->
+  <div id="backdrop" class="backdrop"></div>
+  <div id="emojiPicker" class="picker" role="dialog" aria-modal="true"></div>
+
+  <aside id="miniPanel" class="mini" aria-hidden="true">
+    <div class="mini-body" id="miniBody">
+      <div class="meta" style="margin-bottom:4px">Reaction trang</div>
+      <div id="pageReacts" class="reacts"></div>
+      <div id="panelList"></div>
+      <div class="card" style="margin-top:8px" id="panelComposer">
+        <div style="font-weight:600;margin-bottom:6px">Viết bình luận cho trang này</div>
+        <textarea id="panelBody" placeholder="Đăng nhập GitHub để cmt hoặc cmt ẩn danh"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <button id="panelSend" class="btn">Gửi</button>
+          <button id="panelLogin" class="btn small">Đăng nhập GitHub</button>
+          <div id="panelMsg" class="meta"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- To top -->
+  <button id="toTopBtn" aria-label="Lên đầu chap" title="Lên đầu chap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 15l-6-6-6 6"/>
+    </svg>
+  </button>
+
+  <main class="wrap grid">
+    <!-- HOME -->
+    <section id="homeView" class="grid">
+      <div class="card"><div style="font-weight:700;margin-bottom:6px">Cạnh tranh thân thiện (Friendly Rivalry)</div></div>
+      <div class="grid" style="grid-template-columns: 280px 1fr;gap:16px;align-items:start">
+        <div class="card">
+          <img id="coverImg" alt="cover" style="width:100%;border-radius:10px;border:1px solid var(--bd);background:#0a0c0f"
+               src="assets/cover.jpg" onerror="this.onerror=null; this.src='assets/Cover.jpg';">
+        </div>
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:10px">Mục lục</div>
+          <div id="homeTOC" class="toc-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- READER -->
+    <section id="readerView" style="display:none">
+      <div class="card"><div id="chapTitle" style="font-weight:700">...</div></div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevTop">⟵ Chap trước</button></div>
+          <div class="center"><label for="chapterSelMid" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label><select id="chapterSelMid"></select></div>
+          <div class="right"><button class="btn" id="nextTop">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <div id="viewer" class="viewer"></div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevBottom">⟵ Chap trước</button></div>
+          <div class="center"><label for="chapterSelBottom" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label><select id="chapterSelBottom"></select></div>
+          <div class="right"><button class="btn" id="nextBottom">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <!-- Aggregated chapter comments -->
+      <div class="card" id="aggCard">
+        <div class="row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+          <div style="font-weight:700">Bình luận chap</div>
+          <div class="row" style="display:flex;gap:8px;align-items:center">
+            <button id="heartBtn" class="heart" title="Thả tim chap">
+              ❤️ <span id="heartLabel">Thả tim</span>
+            </button>
+            <span id="heartNote" class="note"></span>
+            <div class="pill">
+              <label for="sortSel">Sắp xếp</label>
+              <select id="sortSel">
+                <option value="new">Cmt mới nhất</option>
+                <option value="old">Cmt cũ nhất</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:10px">
+          <div style="font-weight:600;margin-bottom:6px">Viết bình luận (toàn chap)</div>
+          <textarea id="chapBody" placeholder="Đăng nhập GitHub để cmt hoặc cmt ẩn danh"></textarea>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button id="chapSend" class="btn">Gửi</button>
+            <button id="chapLogin" class="btn small">Đăng nhập GitHub</button>
+            <div id="chapMsg" class="meta"></div>
+          </div>
+        </div>
+
+        <div style="font-weight:600;margin:8px 0 4px">Tất cả bình luận</div>
+        <div id="aggAll"></div>
+        <button id="moreAll" class="btn small" style="margin-top:6px;display:none">Xem thêm</button>
+      </div>
+    </section>
+
+    <div class="footer">Supabase comments: Ẩn danh & GitHub · Emoji reaction (trang/cmt/reply) · Badge rìa phải · Tim đồng bộ.</div>
+  </main>
+
+<script>
+// ====== CONFIG ======
+const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
+const MAX_CHAPTERS_GUESS = 999;
+const MAX_PAGES_GUESS = 2000;
+const EXTS = ["jpg","jpeg","png","gif","webp"];
+const DEFAULT_EMOJIS = ["❤️","😂","😢","😘","😡"];
+const SUPABASE_URL = "https://kmhypppsljaxvqnnfxfa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaHlwcHBzbGpheHZxbm5meGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5MzUyODgsImV4cCI6MjA3MDUxMTI4OH0.XtcNReQ7J8B9KThtKsaAJ2XXbWwnZat3LVF2y4LMZh4";
+const COOLDOWN_S = 12;
+
+// ====== DB & AUTH ======
+let sb = null;
+function initDB(){ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession:true, autoRefreshToken:true } }); }
+function uuid(){ return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
+const deviceToken = (()=>{ let t=localStorage.getItem('device_token'); if(!t){ t=uuid(); localStorage.setItem('device_token', t); } return t; })();
+const anonKey = (()=>{ const s=deviceToken; let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return String(Math.abs(h)); })();
+const labelAnon = (k)=>"Ẩn danh " + ((parseInt(k.slice(-6)) % 97)+1);
+
+let currentUser=null;
+async function refreshAuthUI(){
+  const { data:{ user } } = await sb.auth.getUser();
+  currentUser = user || null;
+  const s=document.getElementById('authState'), lg=document.getElementById('btnLogin'), lo=document.getElementById('btnLogout');
+  if(currentUser){ const name=currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email; s.textContent="Đã đăng nhập: "+name; lg.style.display="none"; lo.style.display="inline-block"; }
+  else { s.textContent="Chưa đăng nhập"; lg.style.display="inline-block"; lo.style.display="none"; }
+}
+async function loginGH(){ await sb.auth.signInWithOAuth({ provider:'github', options:{ redirectTo: window.location.origin + window.location.pathname } }); }
+async function logoutGH(){ await sb.auth.signOut(); refreshAuthUI(); }
+document.getElementById('btnLogin').onclick=loginGH; document.getElementById('btnLogout').onclick=logoutGH;
+document.getElementById('chapLogin').onclick=loginGH; document.getElementById('panelLogin').onclick=loginGH;
+
+// ====== SUPABASE RPC ======
+async function cmt_add({chapter, page, name, body, edit_token, parent_id, anon_key}){
+  const { data, error } = await sb.rpc('comment_add_v2', { chapter, page, name, body, edit_token, parent_id, anon_key });
+  if(error) throw error; return data;
+}
+async function cmt_edit({id, body, edit_token}){ const { error } = await sb.rpc('comment_edit', { p_id:id, p_edit_token:edit_token, p_body:body }); if(error) throw error; return true; }
+async function cmt_delete({id, edit_token}){ const { error } = await sb.rpc('comment_delete', { p_id:id, p_edit_token:edit_token }); if(error) throw error; return true; }
+async function cmt_fetch(chapter){ const { data, error } = await sb.from('comments').select('*').eq('chapter', chapter).order('created_at', { ascending:false }); if(error) throw error; return data||[]; }
+async function heart_toggle({chapter}){ const { data, error } = await sb.rpc('toggle_heart', { p_chapter: chapter, p_device: deviceToken }); if(error) throw error; return data; }
+async function heart_get({chapter}){ const { data, error } = await sb.rpc('get_heart', { p_chapter: chapter, p_device: deviceToken }); if(error) throw error; return data; }
+async function getPageReacts(ch, page){ const { data, error } = await sb.from('page_reactions').select('emoji, device').eq('chapter',ch).eq('page',page); if(error) throw error; const counts={},mine=new Set(); (data||[]).forEach(r=>{ counts[r.emoji]=(counts[r.emoji]||0)+1; if(r.device===deviceToken) mine.add(r.emoji); }); return { counts, mine }; }
+async function togglePageReact(ch, page, emoji){ const ex = await sb.from('page_reactions').select('id').eq('chapter',ch).eq('page',page).eq('emoji',emoji).eq('device',deviceToken).maybeSingle(); if(ex.error && ex.error.code!=="PGRST116") throw ex.error; if(ex.data){ await sb.from('page_reactions').delete().eq('id', ex.data.id); } else { await sb.from('page_reactions').insert({ chapter:ch, page, emoji, device:deviceToken }); } }
+async function getCommentReactsFor(ids){ if(ids.length===0) return { map:{}, mine:new Set() }; const { data, error } = await sb.from('comment_reactions').select('comment_id, emoji, device').in('comment_id', ids); if(error) throw error; const map={}, mine=new Set(); (data||[]).forEach(r=>{ const k=r.comment_id+'|'+r.emoji; map[k]=(map[k]||0)+1; if(r.device===deviceToken) mine.add(k); }); return { map, mine }; }
+async function toggleCommentReact(id, emoji){ const ex = await sb.from('comment_reactions').select('id').eq('comment_id',id).eq('emoji',emoji).eq('device',deviceToken).maybeSingle(); if(ex.error && ex.error.code!=="PGRST116") throw ex.error; if(ex.data){ await sb.from('comment_reactions').delete().eq('id', ex.data.id); } else { await sb.from('comment_reactions').insert({ comment_id:id, emoji, device:deviceToken }); } }
+
+// ====== HELPERS ======
+const $ = (q, el=document) => el.querySelector(q);
+function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'') ) }
+function enc(s){ return encodeURIComponent(s) }
+function fileName(ch, i, ext){ return `C${ch} (${i}).${ext}` }
+function fileUrl(chPath, ch, i, ext){ const safePath = chPath.split('/').map(encodeURIComponent).join('/'); return `${safePath}/${enc(fileName(ch,i,ext))}` } // legacy (unused)
+function esc(s){ return (s||"").replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;"}[c])) }
+function now(){ return Math.floor(Date.now()/1000) }
+async function urlExists(url){
+  try{
+    const r = await fetch(url, { method:'HEAD', cache:'no-store' });
+    if (r.ok) return true;
+    const g = await fetch(url, { method:'GET', cache:'no-store' });
+    return g.ok;
+  }catch(_){ return false; }
+}
+function imgOk(url){ return urlExists(url); }
+async function findExistingUrl(chPath, ch, i){ for(const ext of EXTS){ const url = fileUrl(chPath, ch, i, ext); if(await imgOk(url)) return url; } return null; }
+async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1) !== null; }
+async function buildChaptersAuto(){ const chapters=[]; for(let i=1;i<=MAX_CHAPTERS_GUESS;i++){ if(!(await chapExists(i))) break; chapters.push({ id:`chap-${i}`, index:i, title:`Chap ${i}`, path:`chapters/chap-${i}` }); } return chapters; }
+
+// ====== STATE ======
+let CHAPTERS=[]; let currentChapter=null; let currentPageForPanel=null; let commentsCache=[]; let pagesWithComments=new Set(); let aggLimit=12; let sortMode='new';
+
+// ====== EMOJI PICKER ======
+const picker=document.getElementById('emojiPicker'); let pickerCb=null;
+function openPicker(x,y,cb){ pickerCb=cb; let html=DEFAULT_EMOJIS.map(e=>`<div class="cell" data-emoji="${e}">${e}</div>`).join(''); html+=`<div class="cell" data-emoji="+">➕</div>`; html+=`<div class="wide"><input id="pickInput" placeholder="Gõ emoji bất kỳ"><button id="pickSend" class="btn small">Chọn</button></div>`; picker.innerHTML=html; picker.style.left=(x-160)+'px'; picker.style.top=(y-120)+'px'; picker.classList.add('open'); picker.onclick=(e)=>{ const el=e.target.closest('.cell'); if(!el) return; const emo=el.getAttribute('data-emoji'); if(emo==='+') return; closePicker(); cb(emo); }; document.getElementById('pickSend').onclick=()=>{ const v=document.getElementById('pickInput').value.trim(); if(v){ closePicker(); cb(v); } }; }
+function closePicker(){ picker.classList.remove('open'); pickerCb=null; }
+
+function renderReactsBar(container, counts, mine, onPick, onToggle){
+  const all = new Set([...Object.keys(counts), ...DEFAULT_EMOJIS]);
+  container.innerHTML = '';
+  all.forEach(e=>{
+    const c = counts[e]||0;
+    const btn = document.createElement('button');
+    btn.className = 'react' + (mine?.has?.(e)?' active':'');
+    btn.textContent = e + (c?` ${c}`:'');
+    btn.onclick = ()=> onToggle(e);
+    container.appendChild(btn);
+  });
+  const plus = document.createElement('button'); plus.className='react'; plus.textContent='➕';
+  plus.onclick=(ev)=> openPicker(ev.clientX, ev.clientY, onPick); container.appendChild(plus);
+}
+
+// ====== COMMENTS RENDER ======
+function renderReplies(list, parentId, reactsMap, myReactSet){
+  const replies = list.filter(x=>x.parent_id===parentId).sort((a,b)=> new Date(a.created_at)-new Date(b.created_at));
+  if(replies.length===0) return '';
+  return `<div class="replies">` + replies.map(rep=>{
+    const who = rep.name?.trim() ? esc(rep.name) : labelAnon(rep.anon_key||'0');
+    const when = new Date(rep.created_at).toLocaleString();
+    const owner = rep.edit_token && localStorage.getItem('cmt_token_'+rep.id) === rep.edit_token;
+    const reactsHtml = DEFAULT_EMOJIS.map(e=>{
+      const key = rep.id + '|' + e; const c = reactsMap[key]||0; const active = myReactSet.has(key);
+      return `<button class="react ${active?'active':''}" data-react-cmt="${rep.id}" data-emoji="${e}">${e} ${c?c:''}</button>`;
+    }).join('');
+    return `<div class="cmt-item" data-id="${rep.id}">
+      <div class="cmt-meta"><b>${who}</b> · ${esc(when)}</div>
+      <div class="cmt-body" data-body>${esc(rep.body)}</div>
+      <div class="reacts">${reactsHtml}<button class="react" data-react-picker="${rep.id}">➕</button></div>
+      ${owner ? `<div class="cmt-actions"><button class="btn small" data-act="edit">Sửa</button><button class="btn small danger" data-act="del">Xoá</button></div>` : ``}
+    </div>`;
+  }).join('') + `</div>`;
+}
+
+function bindItemActions(container){
+  container.querySelectorAll('[data-act="edit"]').forEach(btn=>{
+    btn.onclick = async () => {
+      const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
+      const bodyEl = wrap.querySelector('[data-body]');
+      const ta = document.createElement('textarea'); ta.value = bodyEl.textContent; ta.style.width='100%';
+      bodyEl.replaceWith(ta);
+      btn.textContent='Lưu';
+      btn.onclick = async () => {
+        try{
+          await cmt_edit({ id, body: ta.value.trim(), edit_token: localStorage.getItem('cmt_token_'+id) });
+          const obj = commentsCache.find(c=>c.id===id); if(obj) obj.body = ta.value.trim();
+          await renderAggregated(currentChapter); if(currentPageForPanel) await openMini(currentPageForPanel);
+        }catch(e){ alert('Lỗi sửa: '+(e.message||e)); }
+      };
+    };
+  });
+  container.querySelectorAll('[data-act="del"]').forEach(btn=>{
+    btn.onclick = async () => {
+      if(!confirm('Xoá bình luận này?')) return;
+      const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
+      try{ await cmt_delete({ id, edit_token: localStorage.getItem('cmt_token_'+id) });
+        commentsCache = commentsCache.filter(c=>c.id!==id && c.parent_id!==id);
+        await renderAggregated(currentChapter); if(currentPageForPanel) await openMini(currentPageForPanel);
+      }catch(e){ alert('Lỗi xoá: '+(e.message||e)); }
+    };
+  });
+  container.querySelectorAll('[data-reply]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const wrap = btn.closest('.cmt-item');
+      let box = wrap.querySelector('.reply-box'); if(box){ box.remove(); return; }
+      box = document.createElement('div'); box.className = 'reply-box';
+      box.innerHTML = `<input class="reply-input" placeholder="Viết phản hồi..."><button class="btn small reply-send">Gửi</button>`;
+      wrap.appendChild(box);
+      box.querySelector('.reply-send').onclick = async()=>{
+        const txt = box.querySelector('.reply-input').value.trim(); if(!txt) return;
+        const token = uuid();
+        const name = currentUser ? (currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email) : null;
+        try{
+          const row = await cmt_add({ chapter: currentChapter.index, page: parseInt(wrap.dataset.page)||null, name, body: txt, edit_token: token, parent_id: wrap.dataset.id, anon_key: name?null:anonKey });
+          localStorage.setItem('cmt_token_'+row.id, token);
+          commentsCache.unshift(row);
+          await renderAggregated(currentChapter); if(currentPageForPanel) await openMini(currentPageForPanel);
+        }catch(e){ alert('Lỗi gửi: '+(e.message||e)); }
+      };
+    };
+  });
+  container.querySelectorAll('[data-react-cmt]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const id = btn.getAttribute('data-react-cmt'); const emoji = btn.getAttribute('data-emoji');
+      await toggleCommentReact(id, emoji);
+      await renderAggregated(currentChapter); if(currentPageForPanel) await openMini(currentPageForPanel);
+    };
+  });
+  container.querySelectorAll('[data-react-picker]').forEach(btn=>{
+    btn.onclick = (ev)=>{
+      const id = btn.getAttribute('data-react-picker');
+      openPicker(ev.clientX, ev.clientY, async (emo)=>{
+        await toggleCommentReact(id, emo);
+        await renderAggregated(currentChapter); if(currentPageForPanel) await openMini(currentPageForPanel);
+      });
+    };
+  });
+}
+
+function renderListInto(el, items, reactsMap, myReactSet){
+  el.innerHTML = items.map(it=>{
+    const who = it.name?.trim() ? esc(it.name) : labelAnon(it.anon_key||'0');
+    const when = new Date(it.created_at).toLocaleString();
+    const owner = localStorage.getItem('cmt_token_'+it.id) === it.edit_token;
+    const pageTag = it.page ? ` — #${it.page}` : ' — chap';
+    const reactsHtml = DEFAULT_EMOJIS.map(e=>{
+      const key = it.id + '|' + e; const c = reactsMap[key]||0; const active = myReactSet.has(key);
+      return `<button class="react ${active?'active':''}" data-react-cmt="${it.id}" data-emoji="${e}">${e} ${c?c:''}</button>`;
+    }).join('');
+    return `<div class="cmt-item" data-id="${it.id}" data-page="${it.page||''}">
+      <div class="cmt-meta"><b>${who}</b>${pageTag} · ${esc(when)}</div>
+      <div class="cmt-body" data-body>${esc(it.body)}</div>
+      <div class="reacts">${reactsHtml}<button class="react" data-react-picker="${it.id}">➕</button></div>
+      <div class="cmt-actions">
+        ${owner ? `<button class="btn small" data-act="edit">Sửa</button><button class="btn small danger" data-act="del">Xoá</button>` : ``}
+        <button class="btn small" data-reply>Trả lời</button>
+      </div>
+      ${renderReplies(commentsCache, it.id, reactsMap, myReactSet)}
+    </div>`;
+  }).join('') || '<div class="meta">Chưa có bình luận.</div>';
+  bindItemActions(el);
+}
+
+// ====== MINI PANEL ======
+async function openMini(pageIndex){
+  currentPageForPanel = pageIndex;
+  const bd = document.getElementById('backdrop'); const mini = document.getElementById('miniPanel');
+  document.getElementById('panelBody').value=''; document.getElementById('panelMsg').textContent='';
+  const list = commentsCache.filter(c=> c.page === pageIndex && !c.parent_id);
+  const ids = list.flatMap(it=> [it.id, ...commentsCache.filter(r=>r.parent_id===it.id).map(r=>r.id)]);
+  const { map, mine } = await getCommentReactsFor(ids);
+  renderListInto(document.getElementById('panelList'), list, map, mine);
+
+  const pr = await getPageReacts(currentChapter.index, pageIndex);
+  renderReactsBar(document.getElementById('pageReacts'), pr.counts, pr.mine,
+    async (emo)=>{ await togglePageReact(currentChapter.index, pageIndex, emo); const again = await getPageReacts(currentChapter.index, pageIndex); renderReactsBar(document.getElementById('pageReacts'), again.counts, again.mine, async()=>{}, async()=>{}); },
+    async (e)=>{ await togglePageReact(currentChapter.index, pageIndex, e); const again = await getPageReacts(currentChapter.index, pageIndex); renderReactsBar(document.getElementById('pageReacts'), again.counts, again.mine, async()=>{}, async()=>{}); }
+  );
+
+  bd.classList.add('open'); mini.classList.add('open'); mini.setAttribute('aria-hidden','false');
+}
+function closeMini(){ document.getElementById('backdrop').classList.remove('open'); document.getElementById('miniPanel').classList.remove('open'); document.getElementById('miniPanel').setAttribute('aria-hidden','true'); }
+document.getElementById('backdrop').addEventListener('click', ()=>{ closePicker(); closeMini(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='b'||e.key==='B') closeMini(); if(e.key==='g'||e.key==='G') window.scrollTo({top:0,behavior:'smooth'}); });
+
+// ====== COOL DOWN & SENDERS ======
+function checkCooldown(key){ const last = parseInt(localStorage.getItem(key)||'0',10); if(now()-last < COOLDOWN_S) return COOLDOWN_S-(now()-last); return 0; }
+function setCooldown(key){ localStorage.setItem(key, String(now())); }
+
+document.getElementById('panelSend').addEventListener('click', async ()=>{
+  const body = document.getElementById('panelBody').value.trim(); const msg=document.getElementById('panelMsg');
+  if(!body){ msg.textContent='Ghi gì đó đã nha'; return; }
+  const cd = checkCooldown('cd_page'); if(cd){ msg.textContent='Chậm lại '+cd+'s nha'; return; }
+  const token = uuid(); const name = currentUser ? (currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email) : null;
+  try{
+    const row = await cmt_add({ chapter: currentChapter.index, page: currentPageForPanel, name, body, edit_token: token, parent_id: null, anon_key: name?null:anonKey });
+    localStorage.setItem('cmt_token_'+row.id, token);
+    commentsCache.unshift(row);
+    msg.textContent='Đã gửi';
+    setCooldown('cd_page');
+    await openMini(currentPageForPanel); await renderAggregated(currentChapter);
+  }catch(e){ msg.textContent='Lỗi gửi bình luận: '+ (e.message||e); }
+});
+
+document.getElementById('chapSend').addEventListener('click', async ()=>{
+  const body = document.getElementById('chapBody').value.trim(); const msg=document.getElementById('chapMsg');
+  if(!body){ msg.textContent='Viết gì đó đã nha'; return; }
+  const cd = checkCooldown('cd_chap'); if(cd){ msg.textContent='Chậm lại '+cd+'s nha'; return; }
+  const token = uuid(); const name = currentUser ? (currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email) : null;
+  try{
+    const row = await cmt_add({ chapter: currentChapter.index, page: null, name, body, edit_token: token, parent_id: null, anon_key: name?null:anonKey });
+    localStorage.setItem('cmt_token_'+row.id, token);
+    commentsCache.unshift(row);
+    document.getElementById('chapBody').value=''; msg.textContent='Đã gửi';
+    setCooldown('cd_chap');
+    await renderAggregated(currentChapter);
+  }catch(e){ msg.textContent='Lỗi gửi: '+(e.message||e); }
+});
+
+// ====== HEARTS ======
+async function updateHeartUI(ch){
+  const s = await heart_get({ chapter: ch.index });
+  const btn = document.getElementById('heartBtn'), label=document.getElementById('heartLabel'), note=document.getElementById('heartNote');
+  btn.classList.toggle('active', !!s.active);
+  label.textContent = s.active ? 'Đã thả tim' : 'Thả tim';
+  note.textContent = `(${s.count||0})`;
+  btn.onclick = async ()=>{
+    const r = await heart_toggle({ chapter: ch.index });
+    btn.classList.toggle('active', !!r.active);
+    label.textContent = r.active ? 'Đã thả tim' : 'Thả tim';
+    note.textContent = `(${r.count||0})`;
+  };
+}
+
+// ====== AGGREGATED FEED ======
+function sortItems(a,b){ return sortMode==='new' ? new Date(b.created_at)-new Date(a.created_at) : new Date(a.created_at)-new Date(b.created_at); }
+async function renderAggregated(ch){
+  commentsCache = await cmt_fetch(ch.index);
+  pagesWithComments = new Set(commentsCache.filter(c=> c.page!=null).map(c=> c.page));
+  const top = commentsCache.filter(c=> !c.parent_id).sort(sortItems);
+  const show = top.slice(0, aggLimit);
+  const ids = show.flatMap(it=> [it.id, ...commentsCache.filter(r=>r.parent_id===it.id).map(r=>r.id)]);
+  const { map, mine } = await getCommentReactsFor(ids);
+  renderListInto(document.getElementById('aggAll'), show, map, mine);
+  document.getElementById('moreAll').style.display = top.length > aggLimit ? 'inline-block' : 'none';
+  document.querySelectorAll('.page-wrap').forEach((wrap, idx)=>{
+    const p = idx+1;
+    wrap.querySelector('.badge').style.display = pagesWithComments.has(p) ? 'flex' : 'none';
+  });
+}
+document.getElementById('moreAll').addEventListener('click', ()=>{ aggLimit+=12; renderAggregated(currentChapter); });
+document.getElementById('sortSel').addEventListener('change', (e)=>{ sortMode = e.target.value; renderAggregated(currentChapter); });
+
+// ====== TOP BUTTON ======
+const toTopBtn = document.getElementById('toTopBtn');
+function updateTopBtnVisibility(){ const show = window.scrollY > 600 && document.getElementById('readerView').style.display !== 'none'; toTopBtn.style.display = show ? 'flex' : 'none'; }
+toTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+window.addEventListener('scroll', updateTopBtnVisibility);
+
+// ====== RENDER CHAPTER ======
+async function renderChapter(ch){
+  document.getElementById('homeView').style.display='none';
+  document.getElementById('readerView').style.display='block';
+  currentChapter = ch;
+  document.getElementById('chapTitle').textContent = `${SERIES_TITLE} — ${ch.title}`;
+  const viewer = document.getElementById('viewer'); viewer.innerHTML='';
+
+  ['Top','Mid','Bottom'].forEach(pos=>{ const sel = document.getElementById('chapterSel'+pos); if(sel) sel.value = ch.id; });
+
+  let missing=0;
+  for(let i=1;i<=MAX_PAGES_GUESS;i++){
+    const url = await findExistingUrl(ch.path, ch.index, i);
+    if(!url){ missing++; if(missing>=3 || i===1) break; continue; }
+    missing=0;
+    const wrap=document.createElement('div'); wrap.className='page-wrap';
+    const img=document.createElement('img');
+    img.src=url; img.className='page'; img.loading='lazy'; img.alt=`${ch.title} — trang ${i}`;
+    img.addEventListener('click', ()=> openMini(i));
+    const badge=document.createElement('div'); badge.className='badge'; badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>';
+    wrap.appendChild(img); wrap.appendChild(badge);
+    viewer.appendChild(wrap);
+  }
+
+  const prevId = neighborChapter(ch.id,-1);
+  const nextId = neighborChapter(ch.id, 1);
+  document.getElementById('prevTop').onclick = ()=> prevId && (location.hash=prevId);
+  document.getElementById('nextTop').onclick = ()=> nextId && (location.hash=nextId);
+  document.getElementById('prevBottom').onclick = ()=> prevId && (location.hash=prevId);
+  document.getElementById('nextBottom').onclick = ()=> nextId && (location.hash=nextId);
+
+  await updateHeartUI(ch);
+  await renderAggregated(ch);
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateTopBtnVisibility();
+}
+
+// ====== ROUTER ======
+function populateSelect(id){ const sel = document.getElementById(id); sel.innerHTML=''; CHAPTERS.forEach(ch=>{ const o=document.createElement('option'); o.value=ch.id; o.textContent=ch.title; sel.appendChild(o); }); sel.addEventListener('change', ()=> location.hash = sel.value); }
+function neighborChapter(id, dir){ const idx = CHAPTERS.findIndex(c=>c.id===id); const next = CHAPTERS[idx+dir]; return next ? next.id : null; }
+function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')) }
+function route(){ const h = getHash() || 'home'; if(h==='home'){ document.getElementById('homeView').style.display='grid'; document.getElementById('readerView').style.display='none'; } else { const ch = CHAPTERS.find(c=>c.id===h) || CHAPTERS[0]; renderChapter(ch); } }
+
+(async function init(){
+  // handle OAuth redirect (PKCE) when returning from GitHub
+  try { await sb.auth.exchangeCodeForSession(window.location.href); } catch(e) { /* ignore if not in redirect flow */ }
+
+  initDB(); await refreshAuthUI(); sb.auth.onAuthStateChange((_e,_s)=> refreshAuthUI());
+  CHAPTERS = await buildChaptersAuto();
+  function buildTOC(containerId){ const box = document.querySelector(containerId); box.innerHTML=''; CHAPTERS.forEach(ch=>{ const a=document.createElement('a'); a.href=`#${ch.id}`; a.textContent=ch.title; a.className='btn'; a.addEventListener('click',(e)=>{ e.preventDefault(); location.hash=ch.id; }); box.appendChild(a); }); }
+  buildTOC('#homeTOC');
+  ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(populateSelect);
+  document.querySelector('#fitSel').addEventListener('change', ()=>{ document.querySelectorAll('.page').forEach(img=>{ const mode = document.querySelector('#fitSel').value; if(mode==='fit'){ img.style.width='100%'; img.style.maxWidth='100%'; } else { img.style.width='auto'; img.style.maxWidth='none'; } }); });
+  window.addEventListener('hashchange', route);
+  route();
+  updateTopBtnVisibility();
+})();
+</script>
+</body>
+</html>
