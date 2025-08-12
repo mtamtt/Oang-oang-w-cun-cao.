@@ -259,6 +259,13 @@ const COOLDOWN_S = 10;
 
 let sb = null, demoMode = true, currentUser = null;
 
+function enableDemoMode(){
+  if(!demoMode){
+    console.warn('Switching to demo mode');
+    demoMode = true;
+  }
+}
+
 function uuid(){ return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
 const deviceToken = (()=>{ let t=localStorage.getItem('device_token'); if(!t){t=uuid(); localStorage.setItem('device_token', t);} return t; })();
 function anonNumberFromDevice(token){ let h=0; for(let i=0;i<token.length;i++) h=(h*31 + token.charCodeAt(i))>>>0; return (h % 9999) + 1; }
@@ -341,7 +348,8 @@ async function cmt_add({chapter, page, name, body, parent_id, edit_token}){
           if(error) throw error; return data;
         }catch(e4){
           console.error('comment_add failed', {e1,e2,e3,e4});
-          throw e4 || e3 || e2 || e1;
+          enableDemoMode();
+          return await cmt_add({ chapter, page, name, body, parent_id, edit_token });
         }
       }
     }
@@ -353,24 +361,39 @@ async function cmt_edit({id, body, edit_token}){
     if(i>=0){ store[i].body=body; localStorage.setItem('demo_comments', JSON.stringify(store)); return true; }
     throw new Error('not found');
   }
-  const { error } = await sb.rpc('comment_edit', { p_id:id, p_edit_token:edit_token, p_body:body });
-  if(error) throw error; return true;
+  try{
+    const { error } = await sb.rpc('comment_edit', { p_id:id, p_edit_token:edit_token, p_body:body });
+    if(error) throw error; return true;
+  }catch(e){
+    enableDemoMode();
+    return await cmt_edit({id, body, edit_token});
+  }
 }
 async function cmt_delete({id, edit_token}){
   if(demoMode){
     let store = JSON.parse(localStorage.getItem('demo_comments')||'[]'); store = store.filter(x=>x.id!==id);
     localStorage.setItem('demo_comments', JSON.stringify(store)); return true;
   }
-  const { error } = await sb.rpc('comment_delete', { p_id:id, p_edit_token:edit_token });
-  if(error) throw error; return true;
+  try{
+    const { error } = await sb.rpc('comment_delete', { p_id:id, p_edit_token:edit_token });
+    if(error) throw error; return true;
+  }catch(e){
+    enableDemoMode();
+    return await cmt_delete({id, edit_token});
+  }
 }
 async function cmt_fetch(chapter){
   if(demoMode){
     const store = JSON.parse(localStorage.getItem('demo_comments')||'[]');
     return store.filter(x=>x.chapter===chapter).sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
   }
-  const { data, error } = await sb.from('comments').select('*').eq('chapter', chapter).order('created_at', {ascending:false});
-  if(error) throw error; return data||[];
+  try{
+    const { data, error } = await sb.from('comments').select('*').eq('chapter', chapter).order('created_at', {ascending:false});
+    if(error) throw error; return data||[];
+  }catch(e){
+    enableDemoMode();
+    return await cmt_fetch(chapter);
+  }
 }
 // hearts
 async function heart_toggle({chapter}){
@@ -379,12 +402,23 @@ async function heart_toggle({chapter}){
     if(set.has(deviceToken)) set.delete(deviceToken); else set.add(deviceToken); localStorage.setItem(key, JSON.stringify([...set]));
     return { active:set.has(deviceToken), count:set.size };
   }
-  const { data, error } = await sb.rpc('toggle_heart', { p_chapter:chapter, p_device:deviceToken });
-  if(error) throw error; return data;
+  try{
+    const { data, error } = await sb.rpc('toggle_heart', { p_chapter:chapter, p_device:deviceToken });
+    if(error) throw error; return data;
+  }catch(e){
+    enableDemoMode();
+    return await heart_toggle({chapter});
+  }
 }
 async function heart_get({chapter}){
   if(demoMode){ const key='demo_hearts_'+chapter; const set = new Set(JSON.parse(localStorage.getItem(key)||'[]')); return { active:set.has(deviceToken), count:set.size }; }
-  const { data, error } = await sb.rpc('get_heart', { p_chapter:chapter, p_device:deviceToken }); if(error) throw error; return data;
+  try{
+    const { data, error } = await sb.rpc('get_heart', { p_chapter:chapter, p_device:deviceToken });
+    if(error) throw error; return data;
+  }catch(e){
+    enableDemoMode();
+    return await heart_get({chapter});
+  }
 }
 // page reaction multi-kind
 async function pageReact_get({chapter, page}){
@@ -614,13 +648,18 @@ document.getElementById('panelSend').addEventListener('click', async ()=>{
   const cd = checkCooldown('cd_page'); if(cd){ msg.textContent='Chờ '+cd+'s nha'; return; }
   const name = currentUser ? (currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email || "GitHub") : anonLabel();
   const token=uuid();
-  const row = await cmt_add({ chapter: currentChapter.index, page: currentPageForPanel, name, body, parent_id: null, edit_token: token });
-  localStorage.setItem('cmt_token_'+row.id, token);
-  commentsCache.unshift(row);
-  msg.textContent='Đã gửi';
-  setCooldown('cd_page');
-  await openMini(currentPageForPanel);
-  await renderAggregated(currentChapter);
+  try{
+    const row = await cmt_add({ chapter: currentChapter.index, page: currentPageForPanel, name, body, parent_id: null, edit_token: token });
+    localStorage.setItem('cmt_token_'+row.id, token);
+    commentsCache.unshift(row);
+    msg.textContent='Đã gửi';
+    setCooldown('cd_page');
+    await openMini(currentPageForPanel);
+    await renderAggregated(currentChapter);
+  }catch(e){
+    enableDemoMode();
+    msg.textContent = 'Lỗi gửi bình luận';
+  }
 });
 
 // chapter composer
@@ -631,12 +670,17 @@ document.getElementById('chapSend').addEventListener('click', async ()=>{
   const cd = checkCooldown('cd_chap'); if(cd){ msg.textContent='Chờ '+cd+'s nha'; return; }
   const name = currentUser ? (currentUser.user_metadata?.user_name || currentUser.user_metadata?.full_name || currentUser.email || "GitHub") : anonLabel();
   const token=uuid();
-  const row = await cmt_add({ chapter: currentChapter.index, page: null, name, body, parent_id: null, edit_token: token });
-  localStorage.setItem('cmt_token_'+row.id, token);
-  commentsCache.unshift(row);
-  document.getElementById('chapBody').value=''; msg.textContent='Đã gửi';
-  setCooldown('cd_chap');
-  await renderAggregated(currentChapter);
+  try{
+    const row = await cmt_add({ chapter: currentChapter.index, page: null, name, body, parent_id: null, edit_token: token });
+    localStorage.setItem('cmt_token_'+row.id, token);
+    commentsCache.unshift(row);
+    document.getElementById('chapBody').value=''; msg.textContent='Đã gửi';
+    setCooldown('cd_chap');
+    await renderAggregated(currentChapter);
+  }catch(e){
+    enableDemoMode();
+    msg.textContent='Lỗi gửi bình luận';
+  }
 });
 
 // agg feed
@@ -666,16 +710,27 @@ document.getElementById('aggSort').addEventListener('change', (e)=>{ aggSort = e
 
 // Hearts
 async function updateHeartUI(ch){
-  const s = await heart_get({ chapter: ch.index });
   const btn = document.getElementById('heartBtn'), label=document.getElementById('heartLabel'), note=document.getElementById('heartNote');
-  btn.classList.toggle('active', !!s.active);
-  label.textContent = s.active ? 'Đã thả tim' : 'Thả tim';
-  note.textContent  = `(${s.count||0})`;
+  try{
+    const s = await heart_get({ chapter: ch.index });
+    btn.classList.toggle('active', !!s.active);
+    label.textContent = s.active ? 'Đã thả tim' : 'Thả tim';
+    note.textContent  = `(${s.count||0})`;
+  }catch(e){
+    enableDemoMode();
+    btn.classList.remove('active');
+    label.textContent = 'Thả tim';
+    note.textContent  = '(0)';
+  }
   btn.onclick = async ()=>{
-    const r = await heart_toggle({ chapter: ch.index });
-    btn.classList.toggle('active', !!r.active);
-    label.textContent = r.active ? 'Đã thả tim' : 'Thả tim';
-    note.textContent  = `(${r.count||0})`;
+    try{
+      const r = await heart_toggle({ chapter: ch.index });
+      btn.classList.toggle('active', !!r.active);
+      label.textContent = r.active ? 'Đã thả tim' : 'Thả tim';
+      note.textContent  = `(${r.count||0})`;
+    }catch(err){
+      alert('Lỗi thả tim: '+(err.message||err));
+    }
   };
 }
 
