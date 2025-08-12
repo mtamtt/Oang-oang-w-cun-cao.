@@ -130,6 +130,7 @@
         <span class="auth-name" id="authName">Chưa đăng nhập</span>
         <button class="btn small" id="authBtn">Đăng nhập GitHub</button>
       </div>
+      <div id="demoIndicator" class="pill" style="display:none">Chế độ demo</div>
       <div class="meta">Phím tắt: B đóng cmt · G lên đầu</div>
     </div>
   </header>
@@ -265,11 +266,17 @@ const COOLDOWN_S = 10;
 
 let sb = null, demoMode = true, currentUser = null;
 
+function updateDemoIndicator(){
+  const el=document.getElementById('demoIndicator');
+  if(el){ el.style.display = demoMode ? 'inline-flex':'none'; }
+}
+
 function enableDemoMode(){
   if(!demoMode){
     console.warn('Switching to demo mode');
     demoMode = true;
   }
+  updateDemoIndicator();
 }
 
 function uuid(){ return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
@@ -296,6 +303,7 @@ async function initDB(){
     demoMode=true;
     console.warn('Demo mode, localStorage only');
   }
+  updateDemoIndicator();
 }
 
 async function auth_refreshUI(){
@@ -400,10 +408,13 @@ async function cmt_fetch(chapter){
     const { data, error } = await sb.rpc('comment_list', { p_chapter: chapter });
     if(error) throw error; return data||[];
   }catch(e1){
+    console.warn('RPC comment_list failed', e1);
     try{
       const { data, error } = await sb.from('comments').select('*').eq('chapter', chapter).order('created_at', {ascending:false});
       if(error) throw error; return data||[];
     }catch(e2){
+      console.warn('Fallback comment query failed', e2);
+      alert('Không thể kết nối đến máy chủ, chuyển sang chế độ demo.');
       enableDemoMode();
       return await cmt_fetch(chapter);
     }
