@@ -245,7 +245,7 @@
 const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
 const MAX_CHAPTERS_GUESS = 999;
 const MAX_PAGES_GUESS = 2000;
-const EXTS = ["jpg","jpeg","png","gif","webp"];
+const EXTS = ["jpg","jpeg","png","gif","webp","JPG","JPEG","PNG","GIF","WEBP"];
 const RX = [{k:'like',l:'👍'},{k:'love',l:'❤️'},{k:'laugh',l:'😂'},{k:'wow',l:'😮'},{k:'sad',l:'😢'}];
 
 const SUPABASE_URL = "https://kmhypppsljaxvqnnfxfa.supabase.co";
@@ -283,6 +283,33 @@ function updAuthUI(){
 }
 
 // ====== RPC helpers ======
+  // liệt kê các mẫu tên có thể gặp (giữ bản cũ + thêm C{ch}-#{i})
+function candidateNames(ch, i) {
+  return [
+    `C${ch} (${i})`,     // bản cũ
+    `C${ch}-#${i}`,      // bản mới m từng đề cập
+    `C${ch}-${i}`,       // dự phòng
+    `C${ch}_${i}`,       // dự phòng
+    `C${ch} ${i}`        // dự phòng
+  ];
+}
+
+// tạo url từ tên + đuôi
+function fileUrlFromName(chPath, name, ext) {
+  return `${chPath}/${encodeURIComponent(`${name}.${ext}`)}`;
+}
+
+// thử tất cả tên + tất cả đuôi
+async function findExistingUrl(chPath, ch, i) {
+  const names = candidateNames(ch, i);
+  for (const name of names) {
+    for (const ext of EXTS) {
+      const url = fileUrlFromName(chPath, name, ext);
+      if (await imgOk(url)) return url;
+    }
+  }
+  return null;
+}
 async function rpc(name,args){ const {data,error}=await sb.rpc(name,args||{}); if(error) throw error; return data; }
 
 async function cmt_add({chapter,page,parent=null,body}){
