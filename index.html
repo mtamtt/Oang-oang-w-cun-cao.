@@ -6,7 +6,7 @@
   <title>Oăng oăng w cún cáo — Đọc truyện</title>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#0b0d10;--fg:#e6e8eb;--muted:#98a1b3;--card:#0f1216;--bd:#1a1f29;--accent:#f59e0b;--pink:#ec4899;--green:#22c55e;--blue:#60a5fa;--yellow:#fde047}
+    :root{--bg:#0b0d10;--fg:#e6e8eb;--muted:#98a1b3;--card:#0f1216;--bd:#1a1f29;--accent:#f59e0b;--pink:#ec4899;--green:#22c55e}
     *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%}
     body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
     a{color:inherit;text-decoration:none}
@@ -14,8 +14,8 @@
     header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(11,13,16,.98), rgba(11,13,16,.92));border-bottom:1px solid var(--bd);backdrop-filter:saturate(180%) blur(10px)}
     .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px}
     .brand{display:flex;align-items:center;gap:4px;font-weight:800}
-    .brand svg{height:46px;width:auto;display:block}
-    .brand span{font-weight:800;margin-left:8px}
+    .brand svg{height:26px;width:auto;display:block}
+    .brand span{font-weight:800;margin-left:6px}
     .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);background:var(--card);border-radius:999px}
     select,button,input,textarea{color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
     button{cursor:pointer}
@@ -24,12 +24,17 @@
     .grow{flex:1}
     .grid{display:grid;gap:12px}
     .viewer{display:flex;flex-direction:column;gap:0}
-    .page{width:100%;display:block;border-radius:0;border:none;background:#0a0c0f;margin-left:auto;margin-right:auto}
+    .page{width:100%;display:block;border:none;background:#0a0c0f;margin-left:auto;margin-right:auto}
     .page-wrap{position:relative}
-    /* BIGGER gradient badge, outside rim */
-    .badge{position:absolute;top:50%;right:-12px;transform:translate(50%,-50%);width:28px;height:28px;border-radius:999px;
-      background:linear-gradient(135deg,var(--blue),var(--yellow));display:none;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(0,0,0,.45)}
-    .badge svg{width:16px;height:16px;color:#0b1220}
+    /* Badge comment: đặt ngoài rìa ảnh, gradient xanh→vàng */
+    .badge{
+      position:absolute;top:10px;right:-12px;transform:translateX(40%);
+      background:linear-gradient(135deg,#2dd4bf,#f59e0b);
+      border:1px solid rgba(148,163,184,.35);
+      border-radius:999px;width:26px;height:26px;display:none;align-items:center;justify-content:center;
+      box-shadow:0 8px 18px rgba(0,0,0,.45)
+    }
+    .badge svg{width:14px;height:14px;color:#0b0d10}
     .card{padding:14px;border:1px solid var(--bd);background:var(--card);border-radius:14px}
     .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
     .btn:hover{border-color:#2a3242}
@@ -55,7 +60,7 @@
     .backdrop.open{opacity:1;pointer-events:auto}
     .mini{
       position:fixed;z-index:71;right:16px;bottom:70px;border:1px solid var(--bd);background:var(--card);
-      border-radius:18px;box-shadow:0 16px 32px rgba(0,0,0,.5);
+      border-radius:20px;box-shadow:0 16px 32px rgba(0,0,0,.5);
       width:360px;height:360px;max-width:95vw;max-height:85vh;
       display:flex;flex-direction:column;transform:translateY(16px) scale(.98);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease;
       overflow:hidden;
@@ -73,10 +78,6 @@
     .cmt-actions{display:flex;gap:8px;margin-top:6px}
     .cmt-actions .danger{border-color:#7f1d1d;color:#fca5a5}
 
-    .rx{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--bd);border-radius:999px;padding:4px 8px;margin-right:6px}
-    .rx.active{background:linear-gradient(135deg,rgba(59,130,246,.2),rgba(250,204,21,.1));border-color:#2a3242}
-    .rx .num{font-size:12px;color:#9fb0c0;margin-left:4px}
-
     @media (max-width:640px){
       .mini{width:320px;height:320px;right:12px;bottom:64px}
     }
@@ -88,44 +89,48 @@
     .heart .filled{display:none;color:var(--pink)}
     .heart.active .filled{display:inline}
     .heart.active .outline{display:none}
+
     .note{color:var(--muted);font-size:13px}
+    .row{display:flex;gap:10px;align-items:center}
   </style>
 </head>
 <body>
   <header>
     <div class="bar">
       <div class="brand">
-        <!-- Dog -->
+        <!-- icon cún -->
         <svg viewBox="0 0 64 64" aria-hidden="true">
-          <defs><radialGradient id="dg" cx="50%" cy="45%" r="60%"><stop offset="0%" stop-color="#FFEBD3"/><stop offset="100%" stop-color="#FFD4A9"/></radialGradient></defs>
-          <circle cx="32" cy="34" r="16" fill="url(#dg)" stroke="#0f172a" stroke-width="1.4"/>
-          <path d="M19 27 q4-10 11-7 v7 z" fill="#C38E66" />
-          <path d="M45 27 q-4-10-11-7 v7 z" fill="#C38E66" />
-          <circle cx="26.5" cy="32" r="2.3" fill="#0f172a"/><circle cx="37.5" cy="32" r="2.3" fill="#0f172a"/>
-          <path d="M30.5 35 q1.5-2 3 0 q1.5-2 3 0 a2.2 2.2 0 1 1 -6 0 z" fill="#111827"/>
-          <path d="M28,39 Q32,42 36,39" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M14 20 q10-10 18 0" stroke="#FFE0B2" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <circle cx="26" cy="34" r="3" fill="#0f172a"/><circle cx="38" cy="34" r="3" fill="#0f172a"/>
+          <path d="M28 42 q6 4 12 0" stroke="#0f172a" stroke-width="2" fill="none" stroke-linecap="round"/>
         </svg>
-        <!-- Fox -->
+        <!-- icon cáo -->
         <svg viewBox="0 0 64 64" aria-hidden="true">
-          <defs><linearGradient id="fg" x1="0" x2="1"><stop offset="0" stop-color="#FFC068"/><stop offset="1" stop-color="#FF7A3D"/></linearGradient></defs>
-          <circle cx="32" cy="34" r="16" fill="url(#fg)" stroke="#0f172a" stroke-width="1.4"/>
-          <path d="M23 25 L28 16 L30 28 Z" fill="#FF7A3D"/><path d="M41 25 L36 16 L34 28 Z" fill="#FF7A3D"/>
-          <path d="M22 34 Q32 42 42 34 Q32 31 22 34 Z" fill="white" opacity=".98"/>
-          <circle cx="27.5" cy="32" r="2.2" fill="#0f172a"/><circle cx="36.5" cy="32" r="2.2" fill="#0f172a"/>
-          <circle cx="32" cy="36" r="1.7" fill="#0f172a"/>
+          <path d="M18 22 L26 10 L30 26 Z" fill="#FF7A3D"/><path d="M46 22 L38 10 L34 26 Z" fill="#FF7A3D"/>
+          <path d="M20 36 Q32 46 44 36 Q32 32 20 36 Z" fill="#fff"/>
+          <circle cx="28" cy="32" r="2.2" fill="#0f172a"/><circle cx="36" cy="32" r="2.2" fill="#0f172a"/>
         </svg>
         <span>Oăng oăng w cún cáo</span>
       </div>
+
       <a href="#home" id="homeBtn" class="btn">🏠 Trang chủ</a>
-      <div class="pill"><label for="chapterSelTop">Mục lục</label> <select id="chapterSelTop"></select></div>
-      <div class="pill"><label for="fitSel">Hiển thị</label>
+
+      <div class="pill">
+        <label for="chapterSelTop">Mục lục</label>
+        <select id="chapterSelTop"></select>
+      </div>
+
+      <div class="pill">
+        <label for="fitSel">Hiển thị</label>
         <select id="fitSel">
           <option value="fit">Vừa khung</option>
           <option value="full">Kích thước gốc</option>
         </select>
       </div>
-      <div class="pill" id="ghBtn">🐙 <span id="ghLabel">Đăng nhập GitHub</span></div>
+
       <div class="grow"></div>
+
+      <button id="authBtn" class="btn">🦊 Đăng nhập GitHub</button>
       <div class="meta">Phím tắt: <b>B</b> đóng cmt · <b>G</b> lên đầu</div>
     </div>
   </header>
@@ -140,22 +145,17 @@
       <button class="btn small" id="miniClose">Đóng</button>
     </div>
     <div class="mini-body" id="miniBody">
-      <!-- page reactions -->
-      <div id="rxBar" style="margin:4px 2px 8px 2px"></div>
       <div id="panelList"></div>
       <div class="card" style="margin-top:8px" id="panelComposer">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="font-weight:600">Viết bình luận cho trang này</div>
-          <div class="meta" id="panelUser"></div>
-        </div>
+        <div style="font-weight:600;margin-bottom:6px">Viết bình luận cho trang này</div>
+        <input id="panelName" placeholder="Tên (để trống = Ẩn danh)"/>
         <textarea id="panelBody" placeholder="Nội dung bình luận..."></textarea>
         <button id="panelSend" class="btn">Gửi</button>
         <div id="panelMsg" class="meta" style="margin-top:6px"></div>
       </div>
-      <!-- Minimized composer -->
       <div class="mini-composer" id="miniComposer" style="display:none">
         <input id="miniInput" placeholder="Bình luận nhanh…">
-        <button class="btn small" id="miniSend" title="Gửi">✈</button>
+        <button class="btn small" id="miniSend" title="Gửi">📤</button>
       </div>
     </div>
   </aside>
@@ -206,12 +206,11 @@
         </div>
       </div>
 
-      <!-- Aggregated mixed comments -->
+      <!-- Aggregated chapter comments (mixed) -->
       <div class="card" id="aggCard">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-weight:700">Bình luận chap</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <select id="sortSel" class="btn small"><option value="new">Mới nhất</option><option value="old">Cũ nhất</option></select>
+          <div class="row">
             <button id="heartBtn" class="heart" title="Thả tim chap (đồng bộ)">
               <svg class="outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                    stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
@@ -221,19 +220,26 @@
             <span id="heartNote" class="note"></span>
           </div>
         </div>
-        <div class="card" style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div style="font-weight:600">Viết bình luận cho chap</div>
-            <div id="chapUser" class="meta"></div>
+
+        <div class="row" style="justify-content:space-between;margin:8px 0 4px">
+          <div style="font-weight:600">Viết bình luận (đăng nhập GH hoặc ẩn danh)</div>
+          <div>
+            <label class="meta">Sắp xếp:</label>
+            <select id="sortSel" class="small">
+              <option value="new">Mới nhất</option>
+              <option value="old">Cũ nhất</option>
+            </select>
           </div>
+        </div>
+
+        <div class="card" style="margin-bottom:10px">
           <textarea id="chapBody" placeholder="Nội dung bình luận cho cả chap..."></textarea>
           <button id="chapSend" class="btn">Gửi</button>
           <div id="chapMsg" class="meta" style="margin-top:6px"></div>
         </div>
 
-        <div style="font-weight:600;margin:8px 0 4px">Dòng bình luận (xen kẽ)</div>
-        <div id="agg"></div>
-        <button id="more" class="btn small" style="margin-top:6px;display:none">Xem thêm</button>
+        <div id="aggMixed"></div>
+        <button id="moreMixed" class="btn small" style="margin-top:6px;display:none">Xem thêm</button>
       </div>
     </section>
 
@@ -241,119 +247,52 @@
   </main>
 
 <script>
-// ====== CONFIG ======
+/** ========= CONFIG ========= **/
 const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
 const MAX_CHAPTERS_GUESS = 999;
 const MAX_PAGES_GUESS = 2000;
+/* nhận cả viết hoa */
 const EXTS = ["jpg","jpeg","png","gif","webp","JPG","JPEG","PNG","GIF","WEBP"];
-const RX = [{k:'like',l:'👍'},{k:'love',l:'❤️'},{k:'laugh',l:'😂'},{k:'wow',l:'😮'},{k:'sad',l:'😢'}];
 
+/* Supabase của m */
 const SUPABASE_URL = "https://kmhypppsljaxvqnnfxfa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaHlwcHBzbGpheHZxbm5meGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5MzUyODgsImV4cCI6MjA3MDUxMTI4OH0.XtcNReQ7J8B9KThtKsaAJ2XXbWwnZat3LVF2y4LMZh4";
 
-// Cooldown seconds
-const COOLDOWN_S = 12;
-
-// ====== DB/Auth ======
-let sb = null, user = null, demoMode = false;
+/** ========= DB & HELPERS ========= **/
+let sb = null, currentUser = null;
 function uuid(){ return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)); }
-const deviceToken = (()=>{ let t = localStorage.getItem('device_token'); if(!t){ t = uuid(); localStorage.setItem('device_token', t); } return t; })();
+const deviceToken = (()=>{
+  let t = localStorage.getItem('device_token');
+  if(!t){ t = uuid(); localStorage.setItem('device_token', t); }
+  return t;
+})();
+function esc(s){ return (s||"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])) }
+function now(){ return Math.floor(Date.now()/1000) }
+const $ = (q, el=document)=>el.querySelector(q);
 
-function aliasNumber(){ let h=0; for(const ch of deviceToken) h=(h*31+ch.charCodeAt(0))>>>0; return (h%999)+1; }
-function aliasName(){ return user ? (user.user_metadata?.user_name || user.email || "user") : ("Ẩn danh "+aliasNumber()); }
-
-async function initDB(){
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true } });
-  const got = await sb.auth.getUser(); user = got?.data?.user || null;
-  updAuthUI();
-  sb.auth.onAuthStateChange((_e, sess)=>{ user = sess?.user || null; updAuthUI(); });
-}
-async function loginGH(){
-  await sb.auth.signInWithOAuth({ provider:'github', options: { redirectTo: location.href } });
-}
-async function logoutGH(){
-  await sb.auth.signOut();
-}
-function updAuthUI(){
-  const b=document.getElementById('ghBtn'), l=document.getElementById('ghLabel');
-  const cu=document.getElementById('chapUser'), pu=document.getElementById('panelUser');
-  if(user){ l.textContent='Đăng xuất'; b.onclick=logoutGH; }
-  else { l.textContent='Đăng nhập GitHub'; b.onclick=loginGH; }
-  cu.textContent = pu.textContent = (user? 'Đăng nhập: ' : 'Không đăng nhập → ') + aliasName();
-}
-
-// ====== RPC helpers ======
-  // liệt kê các mẫu tên có thể gặp (giữ bản cũ + thêm C{ch}-#{i})
-function candidateNames(ch, i) {
+/* tên mẫu hợp lệ */
+function candidateNames(ch,i){
   return [
-    `C${ch} (${i})`,     // bản cũ
-    `C${ch}-#${i}`,      // bản mới m từng đề cập
-    `C${ch}-${i}`,       // dự phòng
-    `C${ch}_${i}`,       // dự phòng
-    `C${ch} ${i}`        // dự phòng
+    `C${ch} (${i})`, // bản cũ
+    `C${ch}-#${i}`,  // bản mới
+    `C${ch}-${i}`,
+    `C${ch}_${i}`,
+    `C${ch} ${i}`,
+    `C${ch}.${i}`
   ];
 }
-
-// tạo url từ tên + đuôi
-function fileUrlFromName(chPath, name, ext) {
-  return `${chPath}/${encodeURIComponent(`${name}.${ext}`)}`;
-}
-
-// thử tất cả tên + tất cả đuôi
-async function findExistingUrl(chPath, ch, i) {
-  const names = candidateNames(ch, i);
-  for (const name of names) {
-    for (const ext of EXTS) {
-      const url = fileUrlFromName(chPath, name, ext);
-      if (await imgOk(url)) return url;
+function fileUrlFromName(chPath,name,ext){ return `${chPath}/${encodeURIComponent(`${name}.${ext}`)}` }
+function imgOk(url){ return new Promise(r=>{ const im=new Image(); im.onload=()=>r(true); im.onerror=()=>r(false); im.src=url; }) }
+async function findExistingUrl(chPath,ch,i){
+  for(const name of candidateNames(ch,i)){
+    for(const ext of EXTS){
+      const url=fileUrlFromName(chPath,name,ext);
+      if(await imgOk(url)) return url;
     }
   }
   return null;
 }
-async function rpc(name,args){ const {data,error}=await sb.rpc(name,args||{}); if(error) throw error; return data; }
-
-async function cmt_add({chapter,page,parent=null,body}){
-  const edit_token = uuid(); // luôn cấp token để chủ cmt sửa/xoá
-  const name = user ? null : aliasName(); // nếu login, name=null để dùng profile; nếu ẩn danh -> lưu alias
-  let row;
-  if(parent){ row = await rpc('comment_reply_add', {p_chapter:chapter,p_page:page,p_parent:parent,p_name:name,p_body:body,p_edit_token:edit_token}); }
-  else { row = await rpc('comment_add', {p_chapter:chapter,p_page:page,p_name:name,p_body:body,p_edit_token:edit_token}); }
-  localStorage.setItem('cmt_token_'+row.id, row.edit_token || edit_token);
-  return row;
-}
-async function cmt_edit({id, body}){ const tok=localStorage.getItem('cmt_token_'+id); await rpc('comment_edit', {p_id:id,p_edit_token:tok,p_body:body}); }
-async function cmt_delete({id}){ const tok=localStorage.getItem('cmt_token_'+id); await rpc('comment_delete', {p_id:id,p_edit_token:tok}); }
-async function cmt_fetch(chapter, asc=false){ const {data,error}=await sb.from('comments').select('*').eq('chapter',chapter).order('created_at', {ascending:asc}); if(error) throw error; return data || []; }
-
-async function heart_toggle({chapter}){ return await rpc('toggle_heart', { p_chapter:chapter, p_device:deviceToken }); }
-async function heart_get({chapter}){ return await rpc('get_heart', { p_chapter:chapter, p_device:deviceToken }); }
-
-// Reactions
-async function rx_page_get(ch,page){ return await rpc('get_page_reactions', {p_chapter:ch,p_page:page,p_device:deviceToken,p_user:user?.id||null}); }
-async function rx_page_toggle(ch,page,kind){ return await rpc('toggle_page_reaction', {p_chapter:ch,p_page:page,p_kind:kind,p_device:deviceToken,p_user:user?.id||null}); }
-async function rx_cmt_get(id){ return await rpc('get_comment_reactions', {p_target:id,p_device:deviceToken,p_user:user?.id||null}); }
-async function rx_cmt_toggle(id,kind){ return await rpc('toggle_comment_reaction', {p_target:id,p_kind:kind,p_device:deviceToken,p_user:user?.id||null}); }
-
-// ====== HELPERS ======
-const $ = (q, el=document) => el.querySelector(q);
-function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')) }
-function enc(s){ return encodeURIComponent(s) }
-function fileName(ch, i, ext){ return `C${ch} (${i}).${ext}` }
-function fileUrl(chPath, ch, i, ext){ return `${chPath}/${enc(fileName(ch,i,ext))}` }
-function esc(s){ return (s||"").replace(/[&<>]/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;"}[c])) }
-function now(){ return Math.floor(Date.now()/1000) }
-
-function imgOk(url){
-  return new Promise((resolve)=>{ const img=new Image(); img.onload=()=>resolve(true); img.onerror=()=>resolve(false); img.src=url; });
-}
-async function findExistingUrl(chPath, ch, i){
-  for(const ext of EXTS){
-    const url = fileUrl(chPath, ch, i, ext);
-    if(await imgOk(url)) return url;
-  }
-  return null;
-}
-async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1) !== null; }
+async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1)!==null; }
 async function buildChaptersAuto(){
   const chapters=[];
   for(let i=1;i<=MAX_CHAPTERS_GUESS;i++){
@@ -363,63 +302,98 @@ async function buildChaptersAuto(){
   return chapters;
 }
 
-// ====== STATE ======
-let CHAPTERS=[], currentChapter=null, currentPageForPanel=null;
-let commentsCache=[], pagesWithComments=new Set();
-let orderNew=true, limitAgg=12;
-
-// ====== REACTIONS UI ======
-function renderRx(container, st, toggleFn){
-  container.innerHTML = RX.map(r=>{
-    const x = st?.[r.k] || {};
-    return `<span class="rx ${x.active?'active':''}" data-k="${r.k}">${r.l}<span class="num">${x.count||0}</span></span>`;
-  }).join('');
-  container.querySelectorAll('.rx').forEach(el=>{
-    el.onclick = async ()=>{
-      const k = el.dataset.k;
-      await toggleFn(k);
-      // refresh data properly after toggle
-      // (panel re-opens or agg rerenders elsewhere)
-    };
-  });
+/** ======== Supabase ======== **/
+let demoMode=false;
+function initDB(){
+  if(window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth:{persistSession:true} });
+  } else demoMode=true;
+}
+async function getUser(){
+  if(!sb) return null;
+  const { data:{ user } } = await sb.auth.getUser();
+  currentUser = user; return user;
+}
+async function loginGithub(){
+  if(!sb) return;
+  await sb.auth.signInWithOAuth({ provider:"github" });
+}
+async function logout(){
+  if(!sb) return;
+  await sb.auth.signOut(); currentUser=null; updateAuthBtn();
+}
+function anonName(){
+  let id = localStorage.getItem('anon_idx');
+  if(!id){ id = String(Math.floor(Math.random()*9000)+1000); localStorage.setItem('anon_idx', id); }
+  return `Ẩn danh ${id}`;
+}
+function currentDisplayName(){
+  if(currentUser){
+    return currentUser.user_metadata?.user_name || currentUser.email?.split("@")[0] || "GitHub user";
+  }
+  return anonName();
+}
+function updateAuthBtn(){
+  const btn = $('#authBtn');
+  if(currentUser){
+    btn.textContent = `👋 ${currentDisplayName()} (Đăng xuất)`;
+    btn.onclick = logout;
+  }else{
+    btn.textContent = '🦊 Đăng nhập GitHub';
+    btn.onclick = loginGithub;
+  }
 }
 
-// ====== MINI PANEL ======
+/** ======== API: comments/hearts (yêu cầu schema đã import) ======== **/
+async function cmt_add({chapter,page,name,body,edit_token}){
+  const { data, error } = await sb.rpc('comment_add',{ p_chapter:chapter, p_page:page, p_name:name, p_body:body, p_edit_token:edit_token });
+  if(error) throw error; return data;
+}
+async function cmt_edit({id, body, edit_token}){
+  const { error } = await sb.rpc('comment_edit',{ p_id:id, p_edit_token:edit_token, p_body:body });
+  if(error) throw error; return true;
+}
+async function cmt_delete({id, edit_token}){
+  const { error } = await sb.rpc('comment_delete',{ p_id:id, p_edit_token:edit_token });
+  if(error) throw error; return true;
+}
+async function cmt_fetch(chapter){
+  const { data, error } = await sb.from('comments').select('*').eq('chapter',chapter).order('created_at',{ascending:false});
+  if(error) throw error; return data||[];
+}
+async function heart_toggle({chapter}){
+  const { data, error } = await sb.rpc('toggle_heart',{ p_chapter:chapter, p_device:deviceToken });
+  if(error) throw error; return data;
+}
+async function heart_get({chapter}){
+  const { data, error } = await sb.rpc('get_heart',{ p_chapter:chapter, p_device:deviceToken });
+  if(error) throw error; return data;
+}
+
+/** ====== STATE ====== **/
+let CHAPTERS=[];
+let currentChapter=null;
+let currentPageForPanel=null;
+let commentsCache=[];
+let pagesWithComments=new Set();
+let mixedLimit=20;
+
+/** ====== PANEL ====== **/
 function renderListInto(el, items){
   el.innerHTML = items.map(it=>{
-    const who = it.user_id ? (it.name || '(user)') : (it.name || aliasName());
+    const who = it.name?.trim() ? esc(it.name) : "Ẩn danh";
     const when = new Date(it.created_at).toLocaleString();
     const owner = localStorage.getItem('cmt_token_'+it.id) === it.edit_token;
-    return `<div class="cmt-item" data-id="${it.id}" data-page="${it.page||''}">
+    return `<div class="cmt-item" data-id="${it.id}">
       <div class="cmt-meta"><b>${who}</b> — #${it.page} · <span>${esc(when)}</span></div>
       <div class="cmt-body" data-body>${esc(it.body)}</div>
-      <div class="cmt-rx" data-rx="${it.id}"></div>
-      <div class="cmt-actions">
-        <button class="btn small" data-act="reply">Trả lời</button>
-        ${owner ? `<button class="btn small" data-act="edit">Sửa</button> <button class="btn small danger" data-act="del">Xoá</button>` : ``}
-      </div>
+      ${owner ? `<div class="cmt-actions">
+          <button class="btn small" data-act="edit">Sửa</button>
+          <button class="btn small danger" data-act="del">Xoá</button>
+        </div>` : ``}
     </div>`;
   }).join('') || '<div class="meta">Chưa có bình luận cho trang này.</div>';
 
-  // bind reaction + actions
-  el.querySelectorAll('[data-rx]').forEach(async bar=>{
-    const id = bar.dataset.rx; const st = await rx_cmt_get(id);
-    renderRx(bar, st, (k)=>rx_cmt_toggle(id,k));
-  });
-  el.querySelectorAll('[data-act="reply"]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id; const pg = Number(wrap.dataset.page||'0');
-      if(wrap.querySelector('textarea')) return;
-      const ta=document.createElement('textarea'); ta.placeholder='Trả lời...';
-      const ok=document.createElement('button'); ok.className='btn small'; ok.textContent='Gửi';
-      wrap.appendChild(ta); wrap.appendChild(ok);
-      ok.onclick = async ()=>{
-        const body = ta.value.trim(); if(!body) return;
-        try{ await cmt_add({chapter:currentChapter.index,page:pg,parent:id,body}); await openMini(pg); await renderAggregated(currentChapter); }
-        catch(e){ alert('Lỗi reply: '+(e.message||e)); }
-      };
-    };
-  });
   el.querySelectorAll('[data-act="edit"]').forEach(btn=>{
     btn.onclick = async ()=>{
       const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
@@ -428,9 +402,14 @@ function renderListInto(el, items){
       const ta = document.createElement('textarea'); ta.value = old; ta.style.width='100%';
       bodyEl.replaceWith(ta);
       btn.textContent='Lưu';
-      btn.onclick = async () => {
-        try{ await cmt_edit({ id, body: ta.value.trim() }); await openMini(Number(wrap.dataset.page||'0')); await renderAggregated(currentChapter); }
-        catch(e){ alert('Lỗi sửa: '+(e.message||e)); }
+      btn.onclick = async ()=>{
+        const token = localStorage.getItem('cmt_token_'+id);
+        try{
+          await cmt_edit({ id, body: ta.value.trim(), edit_token: token });
+          const obj = commentsCache.find(c=>c.id===id); if(obj) obj.body = ta.value.trim();
+          await openMini(currentPageForPanel);
+          await renderAggregated(currentChapter);
+        }catch(e){ alert('Lỗi sửa: '+(e.message||e)); }
       };
     };
   });
@@ -438,119 +417,85 @@ function renderListInto(el, items){
     btn.onclick = async ()=>{
       if(!confirm('Xoá bình luận này?')) return;
       const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
-      try{ await cmt_delete({ id }); await openMini(Number(wrap.dataset.page||'0')); await renderAggregated(currentChapter); }
-      catch(e){ alert('Lỗi xoá: '+(e.message||e)); }
+      const token = localStorage.getItem('cmt_token_'+id);
+      try{
+        await cmt_delete({ id, edit_token: token });
+        commentsCache = commentsCache.filter(c=>c.id!==id);
+        await openMini(currentPageForPanel);
+        await renderAggregated(currentChapter);
+      }catch(e){ alert('Lỗi xoá: '+(e.message||e)); }
     };
   });
 }
 
 async function openMini(pageIndex){
   currentPageForPanel = pageIndex;
-  const bd = document.getElementById('backdrop');
-  const mini = document.getElementById('miniPanel');
-  document.getElementById('panelTitle').textContent = `Bình luận — #${pageIndex}`;
-  document.getElementById('panelUser').textContent = aliasName();
-  document.getElementById('panelBody').value = '';
-  document.getElementById('panelMsg').textContent = '';
+  $('#panelTitle').textContent = `Bình luận — #${pageIndex}`;
+  $('#panelBody').value = '';
+  $('#panelName').value = currentUser ? currentDisplayName() : '';
+  $('#panelMsg').textContent = '';
 
-  // page reactions
-  const st = await rx_page_get(currentChapter.index, pageIndex);
-  renderRx(document.getElementById('rxBar'), st, (k)=>rx_page_toggle(currentChapter.index, pageIndex, k));
+  const list = commentsCache.filter(c=> c.page === pageIndex);
+  renderListInto($('#panelList'), list);
 
-  // list
-  const list = commentsCache.filter(c=> c.page === pageIndex && !c.parent_id);
-  list.forEach(c=> c.replies = commentsCache.filter(x=>x.parent_id===c.id));
-  const flat = [];
-  list.forEach(c=>{ flat.push(c); (c.replies||[]).forEach(r=>flat.push(Object.assign({}, r, {page:c.page}))); });
-  renderListInto(document.getElementById('panelList'), flat);
-
-  bd.classList.add('open');
-  mini.classList.add('open');
-  mini.setAttribute('aria-hidden','false');
+  $('#backdrop').classList.add('open');
+  $('#miniPanel').classList.add('open');
+  $('#miniPanel').setAttribute('aria-hidden','false');
 }
 function closeMini(){
-  const bd = document.getElementById('backdrop');
-  const mini = document.getElementById('miniPanel');
-  bd.classList.remove('open');
-  mini.classList.remove('open');
-  mini.setAttribute('aria-hidden','true');
+  $('#backdrop').classList.remove('open');
+  $('#miniPanel').classList.remove('open');
+  $('#miniPanel').setAttribute('aria-hidden','true');
 }
-document.getElementById('miniClose').addEventListener('click', closeMini);
-document.getElementById('backdrop').addEventListener('click', closeMini);
-document.addEventListener('keydown', (e)=>{
-  if(e.key==='b' || e.key==='B') closeMini();
-  if(e.key==='g' || e.key==='G') window.scrollTo({top:0,behavior:'smooth'});
+$('#miniClose').addEventListener('click', closeMini);
+$('#backdrop').addEventListener('click', closeMini);
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='b'||e.key==='B') closeMini();
+  if(e.key==='g'||e.key==='G') window.scrollTo({top:0,behavior:'smooth'});
 });
-
-// Swipe
 (function enableSwipeClose(){
-  const mini = document.getElementById('miniPanel');
-  let sx=0, sy=0, moving=false;
-  mini.addEventListener('touchstart', (e)=>{
-    const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; moving=false;
-  }, {passive:true});
-  mini.addEventListener('touchmove', (e)=>{
-    const t=e.changedTouches[0];
-    const dx=t.clientX - sx; const dy=Math.abs(t.clientY - sy);
-    if(Math.abs(dx)>20 && dy<25) moving=true;
-  }, {passive:true});
-  mini.addEventListener('touchend', (e)=>{
-    const t=e.changedTouches[0];
-    const dx=t.clientX - sx; const dy=Math.abs(t.clientY - sy);
-    if(moving && dx>70 && dy<40) closeMini();
-  }, {passive:true});
+  const mini=$('#miniPanel'); let sx=0,sy=0,moving=false;
+  mini.addEventListener('touchstart',e=>{const t=e.changedTouches[0];sx=t.clientX;sy=t.clientY;moving=false},{passive:true});
+  mini.addEventListener('touchmove',e=>{const t=e.changedTouches[0];const dx=t.clientX-sx;const dy=Math.abs(t.clientY-sy);if(Math.abs(dx)>20&&dy<25)moving=true},{passive:true});
+  mini.addEventListener('touchend',e=>{const t=e.changedTouches[0];const dx=t.clientX-sx;const dy=Math.abs(t.clientY-sy);if(moving&&dx>70&&dy<40)closeMini()},{passive:true});
 })();
-
-// Minimize panel
-document.getElementById('miniToggle').addEventListener('click', ()=>{
-  const mini = document.getElementById('miniPanel');
-  const body = document.getElementById('miniBody');
-  const comp = document.getElementById('panelComposer');
-  const miniComp = document.getElementById('miniComposer');
-  if(mini.classList.contains('min')){
-    mini.classList.remove('min'); body.style.display='block'; miniComp.style.display='none'; comp.style.display='block';
-  }else{
-    mini.classList.add('min'); body.style.display='block'; miniComp.style.display='flex'; comp.style.display='none';
-  }
+$('#miniToggle').addEventListener('click',()=>{
+  const mini=$('#miniPanel'), body=$('#miniBody'), comp=$('#panelComposer'), miniComp=$('#miniComposer');
+  if(mini.classList.contains('min')){ mini.classList.remove('min'); body.style.display='block'; miniComp.style.display='none'; comp.style.display='block'; }
+  else{ mini.classList.add('min'); body.style.display='block'; miniComp.style.display='flex'; comp.style.display='none'; }
 });
-document.getElementById('miniSend').addEventListener('click', ()=>{
-  const txt = document.getElementById('miniInput').value.trim();
-  if(!txt) return;
-  document.getElementById('panelBody').value = txt;
-  document.getElementById('miniInput').value = '';
-  document.getElementById('panelSend').click();
+$('#miniSend').addEventListener('click',()=>{
+  const txt=$('#miniInput').value.trim(); if(!txt) return;
+  $('#panelBody').value=txt; $('#miniInput').value=''; $('#panelSend').click();
 });
 
-// Cooldown helpers
-function checkCooldown(key){
-  const last = parseInt(localStorage.getItem(key)||'0',10);
-  if(now()-last < COOLDOWN_S) return COOLDOWN_S-(now()-last);
-  return 0;
-}
-function setCooldown(key){ localStorage.setItem(key, String(now())); }
+/* cooldown */
+function checkCooldown(key){ const last=parseInt(localStorage.getItem(key)||'0',10); const diff=now()-last; return diff<10?10-diff:0 }
+function setCooldown(key){ localStorage.setItem(key,String(now())) }
 
-// Panel send
-document.getElementById('panelSend').addEventListener('click', async ()=>{
-  const body = document.getElementById('panelBody').value.trim();
-  const msg = document.getElementById('panelMsg');
+/* gửi panel */
+$('#panelSend').addEventListener('click', async ()=>{
+  const name = currentUser ? currentDisplayName() : ($('#panelName').value.trim() || anonName());
+  const body = $('#panelBody').value.trim();
+  const msg = $('#panelMsg');
   if(!body){ msg.textContent='Ghi gì đó đã nha 😅'; return; }
   const cd = checkCooldown('cd_page'); if(cd){ msg.textContent='Chậm lại '+cd+'s nha ~'; return; }
+  const token = uuid();
   try{
-    const row = await cmt_add({ chapter: currentChapter.index, page: currentPageForPanel, body });
+    const row = await cmt_add({ chapter: currentChapter.index, page: currentPageForPanel, name, body, edit_token: token });
+    localStorage.setItem('cmt_token_'+row.id, token);
     commentsCache.unshift(row);
     msg.textContent='Đã gửi!';
     setCooldown('cd_page');
-    await openMini(currentPageForPanel); // rerender
+    await openMini(currentPageForPanel);
     await renderAggregated(currentChapter);
-  }catch(e){
-    msg.textContent='Lỗi gửi bình luận: '+ (e.message||e);
-  }
+  }catch(e){ msg.textContent='Lỗi gửi: '+(e.message||e); }
 });
 
-// ====== HEARTS ======
+/** ====== HEART ====== **/
 async function updateHeartUI(ch){
   const s = await heart_get({ chapter: ch.index });
-  const btn = document.getElementById('heartBtn'), label=document.getElementById('heartLabel'), note=document.getElementById('heartNote');
+  const btn = $('#heartBtn'), label=$('#heartLabel'), note=$('#heartNote');
   btn.classList.toggle('active', !!s.active);
   label.textContent = s.active ? 'Đã thả tim' : 'Thả tim';
   note.textContent = `(${s.count||0})`;
@@ -562,42 +507,26 @@ async function updateHeartUI(ch){
   };
 }
 
-// ====== AGGREGATION (mixed feed) ======
-function cmtHTML(it){
-  const who = it.user_id ? (it.name || '(user)') : (it.name || aliasName());
-  const when = new Date(it.created_at).toLocaleString();
-  const owner = localStorage.getItem('cmt_token_'+it.id) === it.edit_token;
-  return `<div class="cmt-item" data-id="${it.id}" data-page="${it.page||''}">
-    <div class="cmt-meta"><b>${who}</b>${it.page?` — #${it.page}`:''} · <span>${esc(when)}</span></div>
-    <div class="cmt-body" data-body>${esc(it.body)}</div>
-    <div class="cmt-rx" data-rx="${it.id}"></div>
-    <div class="cmt-actions">
-      <button class="btn small" data-act="reply">Trả lời</button>
-      ${owner ? `<button class="btn small" data-act="edit">Sửa</button> <button class="btn small danger" data-act="del">Xoá</button>` : ``}
-    </div>
-  </div>`;
-}
+/** ====== AGGREGATE (mixed) ====== **/
+function renderMixed(container, items, limit){
+  const show = items.slice(0, limit);
+  container.innerHTML = show.map(it=>{
+    const who = it.name?.trim() ? esc(it.name) : 'Ẩn danh';
+    const page = it.page ? ` — #${it.page}` : '';
+    const when = new Date(it.created_at).toLocaleString();
+    const owner = it.edit_token && localStorage.getItem('cmt_token_'+it.id) === it.edit_token;
+    return `<div class="cmt-item" data-id="${it.id}">
+      <div class="cmt-meta"><b>${who}</b>${page} · <span>${esc(when)}</span></div>
+      <div class="cmt-body" data-body>${esc(it.body)}</div>
+      ${owner ? `<div class="cmt-actions">
+        <button class="btn small" data-act="edit">Sửa</button>
+        <button class="btn small danger" data-act="del">Xoá</button>
+      </div>` : ``}
+    </div>`;
+  }).join('') || '<div class="meta">Chưa có bình luận.</div>';
 
-function bindAggActions(scope){
-  scope.querySelectorAll('[data-rx]').forEach(async bar=>{
-    const id = bar.dataset.rx; const st = await rx_cmt_get(id);
-    renderRx(bar, st, (k)=>rx_cmt_toggle(id,k));
-  });
-  scope.querySelectorAll('[data-act="reply"]').forEach(btn=>{
-    btn.onclick = ()=>{
-      const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id; const pg = wrap.dataset.page? Number(wrap.dataset.page): null;
-      if(wrap.querySelector('textarea')) return;
-      const ta=document.createElement('textarea'); ta.placeholder='Trả lời...';
-      const ok=document.createElement('button'); ok.className='btn small'; ok.textContent='Gửi';
-      wrap.appendChild(ta); wrap.appendChild(ok);
-      ok.onclick = async ()=>{
-        const body = ta.value.trim(); if(!body) return;
-        try{ await cmt_add({ chapter: currentChapter.index, page: pg, parent: id, body }); await renderAggregated(currentChapter); }
-        catch(e){ alert('Lỗi reply: '+(e.message||e)); }
-      };
-    };
-  });
-  scope.querySelectorAll('[data-act="edit"]').forEach(btn=>{
+  // actions
+  container.querySelectorAll('[data-act="edit"]').forEach(btn=>{
     btn.onclick = async ()=>{
       const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
       const bodyEl = wrap.querySelector('[data-body]');
@@ -605,78 +534,75 @@ function bindAggActions(scope){
       const ta = document.createElement('textarea'); ta.value = old; ta.style.width='100%';
       bodyEl.replaceWith(ta);
       btn.textContent='Lưu';
-      btn.onclick = async () => {
-        try{ await cmt_edit({ id, body: ta.value.trim() }); await renderAggregated(currentChapter); }
-        catch(e){ alert('Lỗi sửa: '+(e.message||e)); }
+      btn.onclick = async ()=>{
+        const token = localStorage.getItem('cmt_token_'+id);
+        try{ await cmt_edit({ id, body: ta.value.trim(), edit_token: token });
+          const obj = commentsCache.find(c=>c.id===id); if(obj) obj.body = ta.value.trim();
+          await renderAggregated(currentChapter);
+        }catch(e){ alert('Lỗi sửa: '+(e.message||e)); }
       };
     };
   });
-  scope.querySelectorAll('[data-act="del"]').forEach(btn=>{
+  container.querySelectorAll('[data-act="del"]').forEach(btn=>{
     btn.onclick = async ()=>{
       if(!confirm('Xoá bình luận này?')) return;
       const wrap = btn.closest('.cmt-item'); const id = wrap.dataset.id;
-      try{ await cmt_delete({ id }); await renderAggregated(currentChapter); }
-      catch(e){ alert('Lỗi xoá: '+(e.message||e)); }
+      const token = localStorage.getItem('cmt_token_'+id);
+      try{ await cmt_delete({ id, edit_token: token });
+        commentsCache = commentsCache.filter(c=>c.id!==id);
+        await renderAggregated(currentChapter);
+      }catch(e){ alert('Lỗi xoá: '+(e.message||e)); }
     };
   });
+
+  $('#moreMixed').style.display = items.length > limit ? 'inline-block' : 'none';
 }
 
 async function renderAggregated(ch){
-  commentsCache = await cmt_fetch(ch.index, !orderNew);
-  // build page set for badges
-  pagesWithComments = new Set(commentsCache.filter(c=> c.page!=null).map(c=> c.page));
-
-  // mix both chapter-level and per-page into one feed
-  const roots = commentsCache.filter(c=> !c.parent_id);
-  const show = roots.slice(0, limitAgg);
-  const html = show.map(c=> cmtHTML(c)).join('') || '<div class="meta">Chưa có bình luận.</div>';
-  const box = document.getElementById('agg'); box.innerHTML = html;
-  bindAggActions(box);
-
-  // update badges
-  document.querySelectorAll('.page-wrap').forEach((wrap, idx)=>{
-    const p = idx+1;
-    const badge = wrap.querySelector('.badge');
+  commentsCache = await cmt_fetch(ch.index);
+  // pages with comments => hiển badge
+  pagesWithComments = new Set(commentsCache.filter(c=>c.page!=null).map(c=>c.page));
+  document.querySelectorAll('.page-wrap').forEach((wrap,idx)=>{
+    const p = idx+1; const badge = wrap.querySelector('.badge');
     badge.style.display = pagesWithComments.has(p) ? 'flex' : 'none';
   });
-
-  // more button
-  document.getElementById('more').style.display = roots.length > limitAgg ? 'inline-block' : 'none';
+  // mixed + sort
+  const sort = $('#sortSel').value;
+  const arr = [...commentsCache].sort((a,b)=>{
+    const da = new Date(a.created_at), db = new Date(b.created_at);
+    return sort==='new' ? db-da : da-db;
+  });
+  renderMixed($('#aggMixed'), arr, mixedLimit);
 }
-document.getElementById('more').addEventListener('click', ()=>{ limitAgg+=12; renderAggregated(currentChapter); });
-document.getElementById('sortSel').addEventListener('change', (e)=>{ orderNew = (e.target.value==='new'); renderAggregated(currentChapter); });
+$('#moreMixed').addEventListener('click', ()=>{ mixedLimit+=20; renderAggregated(currentChapter); });
+$('#sortSel').addEventListener('change', ()=> renderAggregated(currentChapter));
 
-// ====== TOP BUTTON ======
-const toTopBtn = document.getElementById('toTopBtn');
+/** ====== CHAPTER RENDER ====== **/
+const toTopBtn = $('#toTopBtn');
 function updateTopBtnVisibility(){
-  const show = window.scrollY > 600 && document.getElementById('readerView').style.display !== 'none';
+  const show = window.scrollY > 600 && $('#readerView').style.display !== 'none';
   toTopBtn.style.display = show ? 'flex' : 'none';
 }
 toTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
 window.addEventListener('scroll', updateTopBtnVisibility);
 
-// ====== RENDER CHAPTER ======
 async function renderChapter(ch){
-  document.getElementById('homeView').style.display='none';
-  document.getElementById('readerView').style.display='block';
+  $('#homeView').style.display='none';
+  $('#readerView').style.display='block';
   currentChapter = ch;
-  document.getElementById('chapTitle').textContent = `${SERIES_TITLE} — ${ch.title}`;
-  const viewer = document.getElementById('viewer'); viewer.innerHTML='';
+  $('#chapTitle').textContent = `${SERIES_TITLE} — ${ch.title}`;
+  const viewer = $('#viewer'); viewer.innerHTML='';
 
-  // sync dropdowns
   ['Top','Mid','Bottom'].forEach(pos=>{
-    const sel = document.getElementById('chapterSel'+pos);
-    if(sel) sel.value = ch.id;
+    const sel = $('#chapterSel'+pos); if(sel) sel.value = ch.id;
   });
 
-  // load pages
   let missing=0;
   for(let i=1;i<=MAX_PAGES_GUESS;i++){
     const url = await findExistingUrl(ch.path, ch.index, i);
-    if(!url){
-      missing++; if(missing>=3 || i===1) break; continue;
-    }
+    if(!url){ missing++; if(missing>=3 || i===1) break; continue; }
     missing=0;
+
     const wrap=document.createElement('div'); wrap.className='page-wrap';
     const img=document.createElement('img');
     img.src=url; img.className='page'; img.loading='lazy'; img.alt=`${ch.title} — trang ${i}`;
@@ -686,13 +612,12 @@ async function renderChapter(ch){
     viewer.appendChild(wrap);
   }
 
-  // nav behaviour
   const prevId = neighborChapter(ch.id,-1);
   const nextId = neighborChapter(ch.id, 1);
-  document.getElementById('prevTop').onclick = ()=> prevId && (location.hash=prevId);
-  document.getElementById('nextTop').onclick = ()=> nextId && (location.hash=nextId);
-  document.getElementById('prevBottom').onclick = ()=> prevId && (location.hash=prevId);
-  document.getElementById('nextBottom').onclick = ()=> nextId && (location.hash=nextId);
+  $('#prevTop').onclick = ()=> prevId && (location.hash=prevId);
+  $('#nextTop').onclick = ()=> nextId && (location.hash=nextId);
+  $('#prevBottom').onclick = ()=> prevId && (location.hash=prevId);
+  $('#nextBottom').onclick = ()=> nextId && (location.hash=nextId);
 
   await updateHeartUI(ch);
   await renderAggregated(ch);
@@ -701,9 +626,10 @@ async function renderChapter(ch){
   updateTopBtnVisibility();
 }
 
-// ====== ROUTER ======
+/** ====== ROUTER / TOC ====== **/
+function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')) }
 function populateSelect(id){
-  const sel = document.getElementById(id); sel.innerHTML='';
+  const sel = $('#'+id); sel.innerHTML='';
   CHAPTERS.forEach(ch=>{ const o=document.createElement('option'); o.value=ch.id; o.textContent=ch.title; sel.appendChild(o); });
   sel.addEventListener('change', ()=> location.hash = sel.value);
 }
@@ -713,12 +639,15 @@ function neighborChapter(id, dir){
 }
 function route(){
   const h = getHash() || 'home';
-  if(h==='home'){ document.getElementById('homeView').style.display='grid'; document.getElementById('readerView').style.display='none'; }
+  if(h==='home'){ $('#homeView').style.display='grid'; $('#readerView').style.display='none'; }
   else{ const ch = CHAPTERS.find(c=>c.id===h) || CHAPTERS[0]; renderChapter(ch); }
 }
 
+/** ====== INIT ====== **/
 (async function init(){
-  await initDB();
+  initDB();
+  await getUser(); updateAuthBtn();
+
   CHAPTERS = await buildChaptersAuto();
   function buildTOC(containerId){
     const box = document.querySelector(containerId); box.innerHTML='';
@@ -726,13 +655,15 @@ function route(){
   }
   buildTOC('#homeTOC');
   ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(populateSelect);
-  document.querySelector('#fitSel').addEventListener('change', ()=>{
+
+  $('#fitSel').addEventListener('change', ()=>{
     document.querySelectorAll('.page').forEach(img=>{
-      const mode = document.querySelector('#fitSel').value;
+      const mode = $('#fitSel').value;
       if(mode==='fit'){ img.style.width='100%'; img.style.maxWidth='100%'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
       else{ img.style.width='auto'; img.style.maxWidth='none'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
     });
   });
+
   window.addEventListener('hashchange', route);
   route();
   updateTopBtnVisibility();
