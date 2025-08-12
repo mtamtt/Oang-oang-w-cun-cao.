@@ -1,0 +1,57 @@
+name: Build chapters manifest
+
+on:
+  push:
+    paths:
+      - 'chapters/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate manifest
+        run: |
+          python - << 'PY'
+          import os, json, re, sys
+          base = 'chapters'
+          chaps = []
+          if os.path.isdir(base):
+              for d in os.listdir(base):
+                  p = os.path.join(base, d)
+                  if os.path.isdir(p) and d.startswith('chap-'):
+                      # Lấy số ở cuối: chap-12 -> 12 (không có thì -1 để cuối)
+                      m = re.search(r'(\d+)$', d)
+                      n = int(m.group(1)) if m else 10**9
+                      chaps.append((n, d))
+          chaps.sort()
+          ids = [d for _, d in chaps]
+
+          os.makedirs(base, exist_ok=True)
+          # JSON
+          with open(os.path.join(base, 'index.json'), 'w', encoding='utf-8') as f:
+              json.dump({"chapters":[{"id":i} for i in ids]}, f, ensure_ascii=False, indent=2)
+          # TXT
+          with open(os.path.join(base, 'manifest.txt'), 'w', encoding='utf-8') as f:
+              f.write('\n'.join(ids) + '\n')
+          print("Generated:", ids)
+          PY
+
+      - name: Commit & push
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add chapters/index.json chapters/manifest.txt
+            git commit -m "auto: update chapters manifest"
+            git push
+          else
+            echo "No changes."
+          fi
