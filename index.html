@@ -24,6 +24,7 @@
     .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
     .btn:hover{border-color:#2a3242}
     .nav3{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+    .nav3 .right{justify-self:end;text-align:right}
     .meta{color:var(--muted);font-size:13px}
     #toTopBtn{ position:fixed;right:18px;bottom:18px;z-index:55;border-radius:999px;width:46px;height:46px;display:none;
       align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.35);
@@ -180,7 +181,9 @@ async function ensureAuth(){
 function onAuthUI(){
   const authText = $$("#authText"), loginBtn=$$("#loginBtn"), logoutBtn=$$("#logoutBtn");
   if(user){
-    authText.textContent = user?.user_metadata?.user_name ? `Hi @${user.user_metadata.user_name}` : `Đã đăng nhập`;
+    const meta = user?.user_metadata || {};
+    const uname = meta.user_name || meta.preferred_username || meta.name || meta.login || user.email;
+    authText.textContent = uname ? `Hi @${uname}` : `Đã đăng nhập`;
     loginBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden');
     enable($$("#chap-input"), true); enable($$("#chap-send"), true); $$("#chap-like").disabled=false;
     enable($$("#page-input"), true); enable($$("#page-send"), true); $$("#page-like").disabled=false;
@@ -259,7 +262,7 @@ function fmtTime(s){ try{ return new Date(s).toLocaleString('vi-VN'); }catch(e){
 function countEmoji(reactions, emoji){ if(!Array.isArray(reactions)) return 0; return reactions.filter(r => r.emoji === emoji).length; }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-function commentNode(c, threadId){
+function commentNode(c, threadId, refresh){
   const el = document.createElement('div'); el.className='comment'; el.dataset.id=c.id;
   const name = c.profiles?.display_name || (c.user_id?.slice(0,6)+'…');
   const avatar = c.profiles?.avatar_url || 'https://avatars.githubusercontent.com/u/0?v=4';
@@ -297,9 +300,10 @@ function commentNode(c, threadId){
     const content = t.value.trim(); if(!content) return;
     await sb.from('comments').insert({ thread_id:threadId, content, parent_id:c.id, user_id:user.id });
     t.value=''; el.querySelector('.reply-box').classList.add('hidden');
+    refresh && refresh();
   });
   const repliesEl = el.querySelector('.replies');
-  c.replies.forEach(r=> repliesEl.appendChild(commentNode(r, threadId)));
+  c.replies.forEach(r=> repliesEl.appendChild(commentNode(r, threadId, refresh)));
   return el;
 }
 
@@ -322,10 +326,15 @@ async function renderThread(container, thread){
   likeBtn.classList.toggle('active', await myLiked(thread.id));
   likeBtn.onclick = ()=> toggleLike(thread.id, likeBtn, likeCountEl);
 
+  async function refresh(){
+    const rows = await listComments(thread.id);
+    listEl.innerHTML = '';
+    nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id, refresh)));
+    show(emptyEl, rows.length === 0);
+  }
+
   listEl.innerHTML = '<div class="meta">Đang tải bình luận…</div>';
-  const rows = await listComments(thread.id);
-  listEl.innerHTML = '';
-  nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id)));
+  await refresh();
 
   const input = container.querySelector('[id$="-input"]');
   const send = container.querySelector('[id$="-send"]');
@@ -334,18 +343,15 @@ async function renderThread(container, thread){
     const content = input.value.trim(); if(!content) return;
     await sb.from('comments').insert({ thread_id:thread.id, content, parent_id:null, user_id:user.id });
     input.value='';
+    refresh();
   };
 
   // realtime
   sb.channel('realtime:'+thread.id)
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'comments', filter:`thread_id=eq.${thread.id}` },
-      () => { listComments(thread.id).then(rows=>{ listEl.innerHTML=''; nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id))); }); })
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'reactions' },
-      () => { listComments(thread.id).then(rows=>{ listEl.innerHTML=''; nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id))); }); })
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` },
-      () => { listLikes(thread.id).then(c => likeCountEl.textContent = c); })
-    .on('postgres_changes', { event:'DELETE', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` },
-      () => { listLikes(thread.id).then(c => likeCountEl.textContent = c); })
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'comments', filter:`thread_id=eq.${thread.id}` }, () => refresh())
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'reactions' }, () => refresh())
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` }, () => { listLikes(thread.id).then(c => likeCountEl.textContent = c); })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` }, () => { listLikes(thread.id).then(c => likeCountEl.textContent = c); })
     .subscribe();
 }
 
