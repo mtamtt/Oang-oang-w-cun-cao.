@@ -698,8 +698,8 @@ document.getElementById('backdrop').addEventListener('click', closeMini);
 // send in mini
 function checkCooldown(key){ const last=parseInt(localStorage.getItem(key)||'0',10); const remain = COOLDOWN_S - (now()-last); return remain>0?remain:0; }
 function setCooldown(key){ localStorage.setItem(key, String(now())); }
-/* Disabled: legacy Supabase page comments composer */
-//document.getElementById('panelSend').addEventListener('click', async ()=>{
+/* Disabled: legacy Supabase page comments composer
+document.getElementById('panelSend').addEventListener('click', async ()=>{
   const body = document.getElementById('panelBody').value.trim();
   const msg  = document.getElementById('panelMsg');
   if(!body){ msg.textContent='Viết gì đó đã nha'; return; }
@@ -719,10 +719,10 @@ function setCooldown(key){ localStorage.setItem(key, String(now())); }
     msg.textContent = 'Lỗi gửi bình luận';
   }
 });
+*/
 
-// chapter composer (disabled)
-// Disabled legacy composer
-// document.getElementById('chapSend').addEventListener('click', async ()=>{
+/* Disabled legacy composer
+document.getElementById('chapSend').addEventListener('click', async ()=>{
   const body = document.getElementById('chapBody').value.trim();
   const msg  = document.getElementById('chapMsg');
   if(!body){ msg.textContent='Viết gì đó đã nha'; return; }
@@ -741,6 +741,7 @@ function setCooldown(key){ localStorage.setItem(key, String(now())); }
     msg.textContent='Lỗi gửi bình luận';
   }
 });
+*/
 
 // agg feed
 function renderAggAll(container, items, limit, moreBtn){
