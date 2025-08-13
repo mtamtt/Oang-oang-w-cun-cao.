@@ -276,8 +276,9 @@ let CURRENT_CHAP_INDEX = 0;
 const SUPABASE_URL = "https://kmhypppsljaxvqnnfxfa.supabase.co";
 const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaHlwcHBzbGpheHZxbm5meGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5MzUyODgsImV4cCI6MjA3MDUxMTI4OH0.XtcNReQ7J8B9KThtKsaAJ2XXbWwnZat3LVF2y4LMZh4";
 const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
-const REDIRECT_URL = "https://mtamtt.github.io/Oang-oang-w-cun-cao./";
+const REDIRECT_URL = location.origin + location.pathname;
 const EXTS = ["jpg","jpeg","png","gif","webp"];
+const FALLBACK_CHAPTERS = [{ id:'chap-1', index:1, title:'Chap 1', path:'chapters/chap-1' }];
 const REACTIONS = [
   {k:"like", e:"👍"}, {k:"love", e:"❤️"}, {k:"joy", e:"😂"},
   {k:"wow", e:"😮"}, {k:"sad", e:"😢"}, {k:"angry", e:"😡"}
@@ -524,7 +525,14 @@ async function findExistingUrl(chPath, ch, i){
   for(const ext of EXTS){ const url = `${chPath}/${encodeURIComponent(fileName(ch,i,ext))}`; if(await imgOk(url)) return url; } return null;
 }
 async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1) !== null; }
-async function buildChaptersAuto(){ const cs=[]; for(let i=1;i<=999;i++){ if(!(await chapExists(i))) break; cs.push({ id:`chap-${i}`, index:i, title:`Chap ${i}`, path:`chapters/chap-${i}` }); } return cs; }
+async function buildChaptersAuto(){
+  const cs=[];
+  for(let i=1;i<=999;i++){
+    if(!(await chapExists(i))) break;
+    cs.push({ id:`chap-${i}`, index:i, title:`Chap ${i}`, path:`chapters/chap-${i}` });
+  }
+  return cs.length ? cs : FALLBACK_CHAPTERS;
+}
 
 // ===== STATE =====
 let CHAPTERS=[], currentChapter=null, currentPageForPanel=null, commentsCache=[], pagesWithComments=new Set();
