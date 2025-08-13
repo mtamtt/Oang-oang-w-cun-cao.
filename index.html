@@ -837,8 +837,23 @@ async function renderChapter(ch){
 (async function init(){
   await initDB();
   CHAPTERS = await buildChaptersAuto();
-  function buildTOC(containerId){ const box=document.querySelector(containerId); box.innerHTML=''; CHAPTERS.forEach(ch=>{ const a=document.createElement('a'); a.href=`#${ch.id}`; a.textContent=ch.title; a.className='btn'; a.addEventListener('click',(e)=>{ e.preventDefault(); location.hash=ch.id; }); box.appendChild(a); }); }
-  buildTOC('#homeTOC');
+  function buildTOC(id){
+    const box = document.getElementById(id);
+    if(!box) return;
+    box.innerHTML = '';
+    CHAPTERS.forEach(ch => {
+      const a = document.createElement('a');
+      a.href = `#${ch.id}`;
+      a.textContent = ch.title;
+      a.className = 'btn';
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        location.hash = ch.id;
+      });
+      box.appendChild(a);
+    });
+  }
+  buildTOC('homeTOC');
   ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(populateSelect);
   document.querySelector('#fitSel').addEventListener('change', ()=>{
     document.querySelectorAll('.page').forEach(img=>{
