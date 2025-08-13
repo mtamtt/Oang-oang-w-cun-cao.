@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oăng oăng w cún cáo — Đọc truyện (Supabase Comments)</title>
+  <style>
+    :root{--bg:#0b0d10;--fg:#e6e8eb;--muted:#98a1b3;--card:#0f1216;--bd:#1a1f29;--accent:#f59e0b;--pink:#ec4899;--green:#22c55e;--basic:#94a3b8}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;height:100%}
+    body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg, rgba(11,13,16,.98), rgba(11,13,16,.92));border-bottom:1px solid var(--bd);backdrop-filter:saturate(180%) blur(10px)}
+    .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 16px}
+    .brand{display:flex;align-items:center;gap:2px;font-weight:800}
+    .brand svg{height:46px;width:auto;display:block}
+    .brand svg+svg{margin-left:4px}
+    .brand span{font-weight:800;margin-left:8px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);background:var(--card);border-radius:999px}
+    select,button,input,textarea{color:var(--fg);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+    button{cursor:pointer}
+    .grow{flex:1}
+    .grid{display:grid;gap:12px}
+    .viewer{display:flex;flex-direction:column;gap:0}
+    .page{width:100%;display:block;border-radius:0;border:none;background:#0a0c0f;margin-left:auto;margin-right:auto}
+    .page-wrap{position:relative}
+    .badge{ position:absolute;top:10px;right:-12px;background:#0f172a;border:2px solid #233046;border-radius:999px;
+      width:28px;height:28px;display:none;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(0,0,0,.5)}
+    .badge svg{width:16px;height:16px;color:var(--basic)}
+    .card{padding:14px;border:1px solid var(--bd);background:var(--card);border-radius:14px}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer}
+    .btn:hover{border-color:#2a3242}
+    .nav3{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+    .nav3 .left{justify-self:start}
+    .nav3 .center{justify-self:center}
+    .nav3 .right{justify-self:end}
+    .meta{color:var(--muted);font-size:13px}
+    #toTopBtn{ position:fixed;right:18px;bottom:18px;z-index:55;border-radius:999px;width:46px;height:46px;display:none;
+      align-items:center;justify-content:center;border:1px solid rgba(148,163,184,.35);
+      background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);box-shadow:0 8px 18px rgba(0,0,0,.45);}
+    #toTopBtn svg{width:22px;height:22px;display:block;color:#e5e7eb}
+    .hidden{display:none}
+
+    /* Mini panel */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:70}
+    .backdrop.open{opacity:1;pointer-events:auto}
+    .mini{
+      position:fixed;z-index:71;right:16px;bottom:70px;border:1px solid var(--bd);background:var(--card);
+      border-radius:20px;box-shadow:0 16px 32px rgba(0,0,0,.5);
+      width:360px;height:420px;max-width:95vw;max-height:85vh;
+      display:flex;flex-direction:column;transform:translateY(16px) scale(.98);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease;
+      overflow:hidden;
+    }
+    .mini.open{transform:translateY(0) scale(1);opacity:1;pointer-events:auto}
+    .mini.min{height:auto}
+    .mini-head{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd)}
+    .mini-hint{color:var(--muted);font-size:12px;text-align:center}
+    .mini-body{flex:1;overflow:auto;padding:8px;-webkit-overflow-scrolling:touch}
+    .composer{display:flex;gap:8px;margin:8px 0}
+    .composer textarea{flex:1;resize:vertical;min-height:56px}
+    .comment{border:1px solid var(--bd);border-radius:12px;padding:10px;margin-bottom:10px}
+    .comment .head{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+    .comment .name{font-weight:700}
+    .comment .time{color:var(--muted);font-size:12px}
+    .comment .actions{display:flex;gap:10px;align-items:center;margin-top:6px}
+    .comment .reply{color:var(--basic);cursor:pointer}
+    .reply-box{margin-left:14px;margin-top:6px}
+    .replies{margin-left:14px;margin-top:6px;display:grid;gap:8px}
+    .like-btn{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--bd);padding:6px 10px;border-radius:999px}
+    .like-btn.active{border-color:#f87171}
+    .reaction{cursor:pointer}
+    #sb-chap .thread-head, #sb-page .thread-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    #sb-chap .thread-head .title, #sb-page .thread-head .title{font-weight:700}
+    @media (max-width:640px){ .mini{width:320px;height:380px;right:12px;bottom:64px} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><radialGradient id="dg" cx="50%" cy="45%" r="60%"><stop offset="0%" stop-color="#FFEBD3"/><stop offset="100%" stop-color="#FFD4A9"/></radialGradient></defs>
+          <circle cx="32" cy="34" r="16" fill="url(#dg)" stroke="#0f172a" stroke-width="1.4"/>
+          <path d="M19 27 q4-10 11-7 v7 z" fill="#C38E66" /><path d="M45 27 q-4-10-11-7 v7 z" fill="#C38E66" />
+          <circle cx="26.5" cy="32" r="2.3" fill="#0f172a"/><circle cx="37.5" cy="32" r="2.3" fill="#0f172a"/>
+          <path d="M30.5 35 q1.5-2 3 0 q1.5-2 3 0 a2.2 2.2 0 1 1 -6 0 z" fill="#111827"/>
+          <path d="M28,39 Q32,42 36,39" stroke="#0f172a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <defs><linearGradient id="fg" x1="0" x2="1"><stop offset="0" stop-color="#FFC068"/><stop offset="1" stop-color="#FF7A3D"/></linearGradient></defs>
+          <circle cx="32" cy="34" r="16" fill="url(#fg)" stroke="#0f172a" stroke-width="1.4"/>
+          <path d="M23 25 L28 16 L30 28 Z" fill="#FF7A3D"/><path d="M41 25 L36 16 L34 28 Z" fill="#FF7A3D"/>
+          <path d="M22 34 Q32 42 42 34 Q32 31 22 34 Z" fill="white" opacity=".98"/>
+          <circle cx="27.5" cy="32" r="2.2" fill="#0f172a"/><circle cx="36.5" cy="32" r="2.2" fill="#0f172a"/>
+          <circle cx="32" cy="36" r="1.7" fill="#0f172a"/>
+        </svg>
+        <span>Oăng oăng w cún cáo</span>
+      </div>
+      <a href="#home" id="homeBtn" class="btn">🏠 Trang chủ</a>
+      <div class="pill"><label for="chapterSelTop">Mục lục</label> <select id="chapterSelTop"></select></div>
+      <div class="pill"><label for="fitSel">Hiển thị</label>
+        <select id="fitSel">
+          <option value="fit">Vừa khung</option>
+          <option value="full">Kích thước gốc</option>
+        </select>
+      </div>
+      <div class="grow"></div>
+      <div id="authArea" class="pill">
+        <span id="authText">Đang kiểm tra đăng nhập…</span>
+        <button id="loginBtn" class="btn hidden">Đăng nhập GitHub</button>
+        <button id="logoutBtn" class="btn hidden">Đăng xuất</button>
+      </div>
+      <div class="meta">Phím tắt: B mở cmt · G lên đầu</div>
+    </div>
+  </header>
+
+  <div id="backdrop" class="backdrop"></div>
+  <aside id="miniPanel" class="mini" aria-hidden="true">
+    <div class="mini-head">
+      <div id="panelTitle" style="font-weight:700">Bình luận</div>
+      <div class="mini-hint">Vuốt trái → phải để đóng · nhấn B</div>
+      <button class="btn small" id="miniToggle">Thu gọn</button>
+      <button class="btn small" id="miniClose">Đóng</button>
+    </div>
+    <div class="mini-body">
+      <div id="sb-page">
+        <div class="thread-head">
+          <div class="title">Bình luận ảnh</div>
+          <button id="page-like" class="like-btn"><span>❤️</span><span id="page-like-count">0</span></button>
+        </div>
+        <div class="composer" id="page-composer">
+          <textarea id="page-input" placeholder="Viết gì đó…" disabled></textarea>
+          <button id="page-send" class="btn" disabled>Gửi</button>
+        </div>
+        <div id="page-list"></div>
+      </div>
+    </div>
+  </aside>
+
+  <button id="toTopBtn" aria-label="Lên đầu chap" title="Lên đầu chap">⬆</button>
+
+  <main class="wrap grid">
+    <section id="homeView" class="grid">
+      <div class="card"><div style="font-weight:700;margin-bottom:6px">Cạnh tranh thân thiện (Friendly Rivalry)</div></div>
+      <div class="grid" style="grid-template-columns: 280px 1fr;gap:16px;align-items:start">
+        <div class="card">
+          <img id="coverImg" alt="cover" style="width:100%;border-radius:10px;border:1px solid var(--bd);background:#0a0c0f"
+               src="assets/cover.jpg" onerror="this.onerror=null; this.src='assets/Cover.jpg';">
+        </div>
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:10px">Mục lục</div>
+          <div id="homeTOC" class="toc-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="readerView" style="display:none">
+      <div class="card"><div id="chapTitle" style="font-weight:700">...</div></div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevTop">⟵ Chap trước</button></div>
+          <div class="center"><label for="chapterSelMid" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label><select id="chapterSelMid"></select></div>
+          <div class="right"><button class="btn" id="nextTop">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <div id="viewer" class="viewer"></div>
+
+      <div class="card">
+        <div class="nav3">
+          <div class="left"><button class="btn" id="prevBottom">⟵ Chap trước</button></div>
+          <div class="center"><label for="chapterSelBottom" style="display:block;text-align:center;margin-bottom:6px">Mục lục</label><select id="chapterSelBottom"></select></div>
+          <div class="right"><button class="btn" id="nextBottom">Chap sau ⟶</button></div>
+        </div>
+      </div>
+
+      <div class="card" id="aggCard">
+        <div class="row" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="font-weight:700">Bình luận chap</div>
+            <div class="meta">Đồng bộ qua Supabase Realtime · cần đăng nhập GitHub</div>
+          </div>
+          <button id="chap-like" class="like-btn"><span>❤️</span><span id="chap-like-count">0</span></button>
+        </div>
+        <div id="sb-chap" class="card" style="margin-top:6px">
+          <div class="composer">
+            <textarea id="chap-input" placeholder="Viết gì đó…" disabled></textarea>
+            <button id="chap-send" class="btn" disabled>Gửi</button>
+          </div>
+          <div id="chap-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Supabase comments. Đồng bộ cmt, reaction, tim qua Postgres + Realtime. Không hỗ trợ ẩn danh.</div>
+  </main>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// ====== CONFIG SUPABASE ======
+// TODO: Thay bằng project của m
+const SUPABASE = {
+  url: "https://YOUR-PROJECT.supabase.co",
+  anonKey: "YOUR_PUBLIC_ANON_KEY",
+  redirectTo: typeof location !== 'undefined' ? location.href : undefined
+};
+const sb = createClient(SUPABASE.url, SUPABASE.anonKey);
+
+// ====== APP STATE ======
+const EXTS = ["jpg","jpeg","png","gif","webp"];
+const SERIES_TITLE = "Cạnh tranh thân thiện (Friendly Rivalry)";
+let CHAPTERS=[], currentChapter=null, currentPageForPanel=null;
+let user=null;
+let chapThread=null, pageThread=null;
+
+function $$(q, el=document){ return el.querySelector(q); }
+function getHash(){ return decodeURIComponent(location.hash.replace(/^#/,'')) }
+function fileName(ch, i, ext){ return `C${ch} (${i}).${ext}` }
+function imgOk(url){ return new Promise((resolve)=>{ const img=new Image(); img.onload=()=>resolve(true); img.onerror=()=>resolve(false); img.src=url; }); }
+async function findExistingUrl(chPath, ch, i){
+  for(const ext of EXTS){ const url = `${chPath}/${encodeURIComponent(fileName(ch,i,ext))}`; if(await imgOk(url)) return url; } return null;
+}
+async function chapExists(n){ return await findExistingUrl(`chapters/chap-${n}`, n, 1) !== null; }
+async function buildChaptersAuto(){ const cs=[]; for(let i=1;i<=999;i++){ if(!(await chapExists(i))) break; cs.push({ id:`chap-${i}`, index:i, title:`Chap ${i}`, path:`chapters/chap-${i}` }); } return cs; }
+
+// ====== SUPABASE HELPERS ======
+async function ensureAuth(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(session){ user = session.user; onAuthUI(true); return; }
+  onAuthUI(false);
+}
+function onAuthUI(logged){
+  const authText = $$("#authText");
+  const loginBtn = $$("#loginBtn");
+  const logoutBtn = $$("#logoutBtn");
+  if(logged){
+    authText.textContent = user?.user_metadata?.user_name ? `Hi @${user.user_metadata.user_name}` : `Đã đăng nhập`;
+    loginBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    enableComposers(true);
+  }else{
+    authText.textContent = "Chưa đăng nhập";
+    loginBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    enableComposers(false);
+  }
+}
+async function login(){
+  await sb.auth.signInWithOAuth({ provider:'github', options:{ redirectTo: SUPABASE.redirectTo } });
+}
+async function logout(){
+  await sb.auth.signOut(); location.reload();
+}
+$$("#loginBtn").addEventListener('click', login);
+$$("#logoutBtn").addEventListener('click', logout);
+
+// Thread utils
+async function upsertThread(type, key){
+  const { data, error } = await sb.from('threads')
+    .upsert({ type, key }, { onConflict: 'key' })
+    .select().single();
+  if(error){ console.error(error); }
+  return data;
+}
+async function listComments(threadId){
+  const { data, error } = await sb.from('comments')
+    .select('id, content, user_id, parent_id, created_at, profiles:profiles!comments_user_id_fkey(display_name, avatar_url), reactions:reactions(emoji, user_id)')
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: true });
+  if(error){ console.error(error); return []; }
+  return data;
+}
+async function listLikes(threadId){
+  const { count, error } = await sb.from('likes').select('*', { count: 'exact', head: true }).eq('thread_id', threadId);
+  if(error){ console.error(error); return 0; }
+  return count || 0;
+}
+async function myLiked(threadId){
+  if(!user) return false;
+  const { data, error } = await sb.from('likes').select('thread_id').eq('thread_id', threadId).eq('user_id', user.id).maybeSingle();
+  return !!data && !error;
+}
+async function toggleLike(threadId, btn, countEl){
+  if(!user){ return login(); }
+  const liked = await myLiked(threadId);
+  if(liked){
+    await sb.from('likes').delete().eq('thread_id', threadId).eq('user_id', user.id);
+  }else{
+    await sb.from('likes').upsert({ thread_id: threadId, user_id: user.id }, { onConflict: 'thread_id,user_id' });
+  }
+  const c = await listLikes(threadId);
+  countEl.textContent = c;
+  btn.classList.toggle('active', !liked);
+}
+
+function enableComposers(enabled){
+  ['chap-input','chap-send','page-input','page-send'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.disabled = !enabled;
+  });
+}
+
+// Render comments (flat -> nested)
+function nestComments(rows){
+  const byId = new Map(); rows.forEach(r=>{ byId.set(r.id, {...r, replies:[]}); });
+  const roots=[];
+  rows.forEach(r=>{
+    const node = byId.get(r.id);
+    if(r.parent_id && byId.get(r.parent_id)){
+      byId.get(r.parent_id).replies.push(node);
+    }else{
+      roots.push(node);
+    }
+  });
+  return roots;
+}
+function fmtTime(s){
+  try{ return new Date(s).toLocaleString('vi-VN'); }catch(e){ return s; }
+}
+function commentNode(c, threadId){
+  const el = document.createElement('div'); el.className='comment'; el.dataset.id=c.id;
+  const name = c.profiles?.display_name || (c.user_id?.slice(0,6)+'…');
+  const avatar = c.profiles?.avatar_url || 'https://avatars.githubusercontent.com/u/0?v=4';
+  el.innerHTML = `
+    <div class="head">
+      <img src="${avatar}" alt="" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--bd)">
+      <div class="name">${name}</div>
+      <div class="time">· ${fmtTime(c.created_at)}</div>
+    </div>
+    <div class="body">${escapeHtml(c.content)}</div>
+    <div class="actions">
+      <span class="reply">Trả lời</span>
+      <span class="reaction" data-emoji="❤️">❤️ ${countEmoji(c.reactions, '❤️')}</span>
+      <span class="reaction" data-emoji="👍">👍 ${countEmoji(c.reactions, '👍')}</span>
+    </div>
+    <div class="reply-box hidden">
+      <textarea rows="2" placeholder="Phản hồi…"></textarea>
+      <button class="btn send-reply">Gửi</button>
+    </div>
+    <div class="replies"></div>
+  `;
+  el.querySelectorAll('.reaction').forEach(span=>{
+    span.addEventListener('click', async ()=>{
+      if(!user){ return login(); }
+      const emoji = span.dataset.emoji;
+      await sb.from('reactions').upsert({ comment_id:c.id, emoji, user_id:user.id }, { onConflict:'comment_id,user_id,emoji' });
+    });
+  });
+  el.querySelector('.reply').addEventListener('click', ()=>{
+    el.querySelector('.reply-box').classList.toggle('hidden');
+  });
+  el.querySelector('.send-reply').addEventListener('click', async ()=>{
+    if(!user){ return login(); }
+    const t = el.querySelector('.reply-box textarea');
+    const content = t.value.trim(); if(!content) return;
+    await sb.from('comments').insert({ thread_id:threadId, content, parent_id:c.id, user_id:user.id });
+    t.value=''; el.querySelector('.reply-box').classList.add('hidden');
+  });
+  const repliesEl = el.querySelector('.replies');
+  c.replies.forEach(r=> repliesEl.appendChild(commentNode(r, threadId)));
+  return el;
+}
+function countEmoji(reactions, emoji){
+  if(!Array.isArray(reactions)) return 0;
+  return reactions.filter(r => r.emoji === emoji).length;
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+async function renderThread(container, thread){
+  // likes
+  const likeBtn = container.querySelector('.like-btn');
+  const likeCountEl = container.querySelector('[id$="like-count"]');
+  likeCountEl.textContent = await listLikes(thread.id);
+  likeBtn.classList.toggle('active', await myLiked(thread.id));
+  likeBtn.onclick = ()=> toggleLike(thread.id, likeBtn, likeCountEl);
+
+  // list comments
+  const listEl = container.querySelector('[id$="-list"]');
+  listEl.innerHTML = '<div class="meta">Đang tải bình luận…</div>';
+  const rows = await listComments(thread.id);
+  listEl.innerHTML = '';
+  nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id)));
+
+  // composer
+  const input = container.querySelector('[id$="-input"]');
+  const send = container.querySelector('[id$="-send"]');
+  send.onclick = async ()=>{
+    if(!user){ return login(); }
+    const content = input.value.trim(); if(!content) return;
+    await sb.from('comments').insert({ thread_id:thread.id, content, parent_id:null, user_id:user.id });
+    input.value='';
+  };
+
+  // realtime
+  sb.channel('realtime:'+thread.id)
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'comments', filter:`thread_id=eq.${thread.id}` },
+      payload => {
+        const row = payload.new;
+        // reload minimal: fetch just inserted with profiles + reactions
+        listComments(thread.id).then(rows=>{
+          listEl.innerHTML = '';
+          nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id)));
+        });
+      })
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'reactions' },
+      payload => {
+        // refresh counts
+        listComments(thread.id).then(rows=>{
+          const snapshot = listEl.getBoundingClientRect(); // avoid scroll jump
+          listEl.innerHTML = '';
+          nestComments(rows).forEach(c=> listEl.appendChild(commentNode(c, thread.id)));
+        });
+      })
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` },
+      payload => {
+        listLikes(thread.id).then(c => likeCountEl.textContent = c);
+      })
+    .on('postgres_changes', { event:'DELETE', schema:'public', table:'likes', filter:`thread_id=eq.${thread.id}` },
+      payload => {
+        listLikes(thread.id).then(c => likeCountEl.textContent = c);
+      })
+    .subscribe();
+}
+
+// ====== MINI PANEL (page thread) ======
+async function openMini(pageIndex){
+  currentPageForPanel = pageIndex;
+  $$("#panelTitle").textContent = `Bình luận — #${pageIndex}`;
+  $$("#backdrop").classList.add("open");
+  const mini = $$("#miniPanel"); mini.classList.add("open"); mini.setAttribute("aria-hidden","false");
+  pageThread = await upsertThread('page', `page:${currentChapter.index}-${pageIndex}`);
+  await renderThread($$("#sb-page"), pageThread);
+}
+function closeMini(){ $$("#backdrop").classList.remove("open"); const mini=$$("#miniPanel"); mini.classList.remove("open"); mini.setAttribute("aria-hidden","true"); }
+document.getElementById('miniClose').addEventListener('click', closeMini);
+document.getElementById('backdrop').addEventListener('click', closeMini);
+
+// ====== UI misc ======
+const toTopBtn = document.getElementById('toTopBtn');
+function updateTopBtnVisibility(){ const show = window.scrollY>600 && document.getElementById('readerView').style.display!=='none'; toTopBtn.style.display= show?'flex':'none'; }
+toTopBtn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+window.addEventListener('scroll', updateTopBtnVisibility);
+
+// ====== Router & Reader ======
+function populateSelect(id){ const sel=document.getElementById(id); sel.innerHTML=''; CHAPTERS.forEach(ch=>{ const o=document.createElement('option'); o.value=ch.id; o.textContent=ch.title; sel.appendChild(o); }); sel.addEventListener('change', ()=> location.hash = sel.value); }
+function neighborChapter(id, dir){ const idx=CHAPTERS.findIndex(c=>c.id===id); const nx=CHAPTERS[idx+dir]; return nx?nx.id:null; }
+function route(){ const h=getHash()||'home'; if(h==='home'){ document.getElementById('homeView').style.display='grid'; document.getElementById('readerView').style.display='none'; } else { const ch=CHAPTERS.find(c=>c.id===h) || CHAPTERS[0]; renderChapter(ch); } }
+async function renderChapter(ch){
+  document.getElementById('homeView').style.display='none'; document.getElementById('readerView').style.display='block'; currentChapter=ch;
+  document.getElementById('chapTitle').textContent = `${SERIES_TITLE} — ${ch.title}`;
+  ['Top','Mid','Bottom'].forEach(pos=>{ const sel=document.getElementById('chapterSel'+pos); if(sel) sel.value=ch.id; });
+  const viewer=document.getElementById('viewer'); viewer.innerHTML='';
+  let missing=0;
+  for(let i=1;i<=2000;i++){
+    const url = await findExistingUrl(ch.path, ch.index, i);
+    if(!url){ missing++; if(missing>=3 || i===1) break; continue; }
+    missing=0;
+    const wrap=document.createElement('div'); wrap.className='page-wrap';
+    const img=document.createElement('img'); img.src=url; img.className='page'; img.loading='lazy'; img.alt=`${ch.title} — trang ${i}`;
+    img.addEventListener('click', ()=> openMini(i));
+    const badge=document.createElement('div'); badge.className='badge'; badge.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>';
+    wrap.appendChild(img); wrap.appendChild(badge); viewer.appendChild(wrap);
+  }
+  const prevId=neighborChapter(ch.id,-1), nextId=neighborChapter(ch.id,1);
+  document.getElementById('prevTop').onclick = ()=> prevId && (location.hash=prevId);
+  document.getElementById('nextTop').onclick = ()=> nextId && (location.hash=nextId);
+  document.getElementById('prevBottom').onclick = ()=> prevId && (location.hash=prevId);
+  document.getElementById('nextBottom').onclick = ()=> nextId && (location.hash=nextId);
+
+  // render thread chap
+  chapThread = await upsertThread('chap', `chap:${ch.index}`);
+  await renderThread(document.getElementById('aggCard'), chapThread);
+
+  window.scrollTo({top:0,behavior:'smooth'}); updateTopBtnVisibility();
+}
+
+// ====== INIT ======
+(async function init(){
+  // auth state changes
+  sb.auth.onAuthStateChange((_event, session)=>{
+    user = session?.user || null;
+    onAuthUI(!!user);
+  });
+  await ensureAuth();
+
+  CHAPTERS = await buildChaptersAuto();
+  function buildTOC(containerId){ const box=document.querySelector(containerId); box.innerHTML=''; CHAPTERS.forEach(ch=>{ const a=document.createElement('a'); a.href=`#${ch.id}`; a.textContent=ch.title; a.className='btn'; a.addEventListener('click',(e)=>{ e.preventDefault(); location.hash=ch.id; }); box.appendChild(a); }); }
+  buildTOC('#homeTOC');
+  ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(populateSelect);
+  document.querySelector('#fitSel').addEventListener('change', ()=>{
+    document.querySelectorAll('.page').forEach(img=>{
+      const mode=document.querySelector('#fitSel').value;
+      if(mode==='fit'){ img.style.width='100%'; img.style.maxWidth='100%'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
+      else{ img.style.width='auto'; img.style.maxWidth='none'; img.style.marginLeft='auto'; img.style.marginRight='auto'; }
+    });
+  });
+  window.addEventListener('hashchange', route);
+  route();
+  updateTopBtnVisibility();
+})();
+</script>
+</body>
+</html>
