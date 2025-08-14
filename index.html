@@ -119,7 +119,7 @@
           <div class="title">Bình luận ảnh</div>
           <button id="page-like" class="like-btn" disabled><span>❤️</span><span id="page-like-count">0</span></button>
         </div>
-        <div id="page-auth-hint" class="meta">Khách xem được. Đăng nhập để cmt & tim.</div>
+        <div id="page-auth-hint" class="meta">Đăng nhập để cmt & tim.</div>
         <div class="composer">
           <textarea id="page-input" placeholder="Viết gì đó…" disabled></textarea>
           <button id="page-send" class="btn" disabled>Gửi</button>
@@ -186,8 +186,8 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE = {
-  url: "https://YOUR-PROJECT.supabase.co",
-  anonKey: "YOUR_PUBLIC_ANON_KEY",
+  url: "https://kmhypppsljaxvqnnfxfa.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttaHlwcHBzbGpheHZxbm5meGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5MzUyODgsImV4cCI6MjA3MDUxMTI4OH0.XtcNReQ7J8B9KThtKsaAJ2XXbWwnZat3LVF2y4LMZh4",
   redirectTo: typeof location !== 'undefined' ? location.href : undefined
 };
 const sb = createClient(SUPABASE.url, SUPABASE.anonKey);
