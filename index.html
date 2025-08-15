@@ -235,8 +235,108 @@ const SUPABASE = {
 const sb = createClient(SUPABASE.url, SUPABASE.anonKey);
 window.sb = sb;
 
+// basic helpers / state
+const $$ = (sel) => document.querySelector(sel);
+let user = null;
+let CHAPTERS = [];
+
 // notifications state
 let notifChannel=null;
+
+// --- auth ---
+async function ensureAuth(){
+  const authText = document.getElementById('authText');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function render(){
+    if(user){
+      authText.textContent = user.user_metadata?.user_name || 'Đã đăng nhập';
+      loginBtn.classList.add('hidden');
+      logoutBtn.classList.remove('hidden');
+    }else{
+      authText.textContent = 'Khách';
+      loginBtn.classList.remove('hidden');
+      logoutBtn.classList.add('hidden');
+    }
+  }
+
+  loginBtn?.addEventListener('click', async ()=>{
+    await sb.auth.signInWithOAuth({ provider:'github', options:{ redirectTo: SUPABASE.redirectTo } });
+  });
+
+  logoutBtn?.addEventListener('click', async ()=>{
+    await sb.auth.signOut();
+    user = null;
+    render();
+  });
+
+  const { data:{ session } } = await sb.auth.getSession();
+  user = session?.user || null;
+  render();
+
+  sb.auth.onAuthStateChange((_evt, sess)=>{ user = sess?.user || null; render(); });
+}
+
+// --- chapters / routing ---
+async function buildChaptersAuto(){
+  // basic static chapter list; extend if chapters/index.json is added
+  return [
+    {
+      id:'chap-1',
+      title:'Chương 1',
+      pages:[
+        'chapters/chap-1/C1 (1).jpg',
+        'chapters/chap-1/C1 (2).jpg',
+        'chapters/chap-1/C1 (3).jpg',
+        'chapters/chap-1/C1 (4).jpg'
+      ]
+    }
+  ];
+}
+
+function populateSelect(id){
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  sel.innerHTML='';
+  CHAPTERS.forEach(ch=>{
+    const opt = document.createElement('option');
+    opt.value = ch.id;
+    opt.textContent = ch.title;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', ()=>{ location.hash = sel.value; });
+}
+
+function route(){
+  const hash = location.hash.replace('#','');
+  const home = document.getElementById('homeView');
+  const reader = document.getElementById('readerView');
+  if(!hash){
+    home.style.display='grid';
+    reader.style.display='none';
+    return;
+  }
+  const chap = CHAPTERS.find(c=>c.id===hash);
+  if(!chap) return;
+  home.style.display='none';
+  reader.style.display='';
+  document.getElementById('chapTitle').textContent = chap.title;
+  const viewer = document.getElementById('viewer');
+  viewer.innerHTML='';
+  chap.pages.forEach(p=>{
+    const wrap=document.createElement('div');
+    wrap.className='page-wrap';
+    const img=document.createElement('img');
+    img.className='page';
+    img.src=p;
+    wrap.appendChild(img);
+    viewer.appendChild(wrap);
+  });
+  ['chapterSelTop','chapterSelMid','chapterSelBottom'].forEach(id=>{
+    const s=document.getElementById(id); if(s) s.value=chap.id;
+  });
+}
 
 // reactions toggle helper
 async function toggleReaction(commentId, emoji){
@@ -339,15 +439,6 @@ document.getElementById('notifCloseBtn')?.addEventListener('click', closeNotifPa
       else{ img.style.width='auto'; img.style.maxWidth='none'; }
     });
   });
-
-// more menu handlers (owner & author)
-const moreBtn = el.querySelector('.more-btn'); const menu = el.querySelector('.cmt-menu');
-if(moreBtn && menu){
-  moreBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); const open=menu.classList.toggle('open'); moreBtn.setAttribute('aria-expanded', String(open)); });
-  document.addEventListener('click', (e)=>{ if(menu.classList.contains('open') && !el.contains(e.target)) { menu.classList.remove('open'); moreBtn.setAttribute('aria-expanded','false'); } });
-  const del = el.querySelector('.del-btn'); if(del){ del.addEventListener('click', async ()=>{ if(!confirm('Xóa bình luận này?')) return; const q= sb.from('comments').delete().eq('id', c.id); const res = (user?.user_metadata?.user_name==='mtamtt' || window.__ownerFlag) ? await q : await q.eq('user_id', user.id); if(res.error){ alert(res.error.message); return; } const host = el.closest('#sb-page') ? $$('#sb-page') : $$('#aggCard'); const th = el.closest('#sb-page') ? pageThread : chapThread; await renderThread(host, th); }); }
-  const edit = el.querySelector('.edit-btn'); if(edit){ edit.addEventListener('click', async ()=>{ const ta = document.createElement('textarea'); ta.className='edit-area'; ta.value=c.content||''; const body = el.querySelector('.content'); body.replaceChildren(ta); const ok=document.createElement('button'); ok.className='btn save-edit'; ok.textContent='Lưu'; body.after(ok); ok.addEventListener('click', async ()=>{ const nv=ta.value.trim(); if(!nv) return; const { error } = await sb.from('comments').update({ content:nv }).eq('id', c.id).eq('user_id', user.id); if(error){ alert(error.message); return; } const host = el.closest('#sb-page') ? $$('#sb-page') : $$('#aggCard'); const th = el.closest('#sb-page') ? pageThread : chapThread; await renderThread(host, th); }); }); }
-}
 
   window.addEventListener('hashchange', route);
   route();
